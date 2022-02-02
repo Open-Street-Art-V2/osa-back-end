@@ -1,6 +1,5 @@
 import { Role } from 'src/auth/roles/role.enum';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,7 +9,7 @@ import {
 
 @Entity()
 @Unique(['email'])
-export class User extends BaseEntity {
+export class User {
   @PrimaryGeneratedColumn()
   public id: number;
 
@@ -19,6 +18,18 @@ export class User extends BaseEntity {
 
   @Column()
   password: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  firstname: string;
+  
+  @Column({nullable: true})
+  favoriteCity: string
+
+  @Column({type: 'date'})
+  birthDate: Date;
 
   @Column('enum', { enum: Role })
   role: Role;

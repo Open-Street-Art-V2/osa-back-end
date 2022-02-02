@@ -9,6 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { UsersRepository } from './user.repository';
 import { PasswordDTO } from './dto/update-password.dto';
+import { Role } from 'src/auth/roles/role.enum';
+import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +33,11 @@ export class UsersService {
     return await this.usersRepository.createUser(createUserDTO);
   }
 
-  public async editPassword(password: PasswordDTO, id: number) {
+  public async deleteUser(id: number){
+    return await this.usersRepository.delete({id: id});
+  }
+
+  public async changePassword(password: PasswordDTO, id: number) {
     const user: User = await this.usersRepository.findOne(id);
     try {
       return this.usersRepository.editPassword(password, user);
@@ -41,5 +47,19 @@ export class UsersService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  public async editProfile(
+    updateUserProfileDTO: UpdateUserProfileDTO,
+    id: number,
+  ) {
+    return await this.usersRepository.update(
+      { id: id },
+      { ...updateUserProfileDTO },
+    );
+  }
+
+  public async changeRole(id: number, role: Role) {
+    return await this.usersRepository.update({ id: id }, { role: role });
   }
 }
