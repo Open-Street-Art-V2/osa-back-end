@@ -4,10 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Unique,
-} from "typeorm";
+} from 'typeorm';
 
 @Entity()
-@Unique(["title"])
+@Unique(['title'])
 export class Art {
   @PrimaryGeneratedColumn()
   public id?: number;
@@ -21,10 +21,10 @@ export class Art {
   @Column()
   public description: string;
 
-  @Column("decimal", { precision: 10, scale: 5 })
+  @Column('decimal', { precision: 10, scale: 5 })
   public latitude: number;
 
-  @Column("decimal", { precision: 10, scale: 5 })
+  @Column('decimal', { precision: 10, scale: 5 })
   public longitude: number;
 
   @Column()
@@ -34,8 +34,8 @@ export class Art {
   public city: string;
 
   @CreateDateColumn({
-    type: "timestamp",
-    default: () => "CURRENT_TIMESTAMP(6)",
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public created_at?: Date;
 }
