@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { Picture } from './pictures/picture.entity';
 
 @Entity()
 @Unique(['title'])
@@ -32,6 +34,9 @@ export class Art {
 
   @Column()
   public city: string;
+
+  @OneToMany(() => Picture, (picture) => picture.art)
+  pictures: Picture[];
 
   @CreateDateColumn({
     type: 'timestamp',
