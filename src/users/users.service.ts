@@ -33,14 +33,13 @@ export class UsersService {
     return await this.usersRepository.createUser(createUserDTO);
   }
 
-  public async deleteUser(id: number){
-    return await this.usersRepository.delete({id: id});
+  public async deleteUser(id: number) {
+    return await this.usersRepository.delete({ id: id });
   }
 
   public async changePassword(password: PasswordDTO, id: number) {
-    const user: User = await this.usersRepository.findOne(id);
     try {
-      return this.usersRepository.editPassword(password, user);
+      return await this.usersRepository.editPassword(id, password.password);
     } catch (err) {
       throw new HttpException(
         'Internal Error',
@@ -53,10 +52,12 @@ export class UsersService {
     updateUserProfileDTO: UpdateUserProfileDTO,
     id: number,
   ) {
-    return await this.usersRepository.update(
+    const result = await this.usersRepository.update(
       { id: id },
       { ...updateUserProfileDTO },
     );
+    console.log(result);
+    return result;
   }
 
   public async changeRole(id: number, role: Role) {

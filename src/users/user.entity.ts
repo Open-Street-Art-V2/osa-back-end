@@ -24,11 +24,11 @@ export class User {
 
   @Column()
   firstname: string;
-  
-  @Column({nullable: true})
-  favoriteCity: string
 
-  @Column({type: 'date'})
+  @Column({ nullable: true })
+  favoriteCity: string;
+
+  @Column({ type: 'date' })
   birthDate: Date;
 
   @Column('enum', { enum: Role })

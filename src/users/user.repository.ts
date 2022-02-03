@@ -1,6 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDTO } from './dto/create-user.dto';
-import { PasswordDTO } from './dto/update-password.dto';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 
@@ -11,9 +10,8 @@ export class UsersRepository extends Repository<User> {
     return await this.save(user);
   }
 
-  public async editPassword(pw: PasswordDTO, user: User) {
-    user.password = await bcrypt.hash(pw.password, 10);
-    const { password, ...editedUser } = await this.save(user);
-    return editedUser;
+  public async editPassword(id: number, password: string) {
+    password = await bcrypt.hash(password, 10);
+    return this.update({ id: id }, { password: password });
   }
 }

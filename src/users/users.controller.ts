@@ -81,8 +81,6 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserRoleDTO: UpdateUserRoleDTO,
   ) {
-    console.log(id + ' : ID');
-    console.log(updateUserRoleDTO.role + ' : ROLE');
     const result: UpdateResult = await this.usersService.changeRole(
       id,
       updateUserRoleDTO.role,
