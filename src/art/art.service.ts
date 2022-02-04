@@ -9,17 +9,27 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateArtDto } from './dto/create-art.dto';
 import { Art } from './art.entity';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
+import { Picture } from './picture/picture.entity';
 
 @Injectable()
 export class ArtService {
   constructor(
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
+    @InjectRepository(Picture) private pictureRepository: Repository<Picture>,
   ) {}
 
-  public async createArt(createArtDto: CreateArtDto) {
+  public async createArt(createArtDto: CreateArtDto, filename: string) {
     try {
-      return await this.artRepository.createArt(createArtDto);
+      const result = await this.artRepository.createArt(createArtDto);
+      if(filename){
+        const picture: Picture = {
+          url: filename,
+          art: result,
+        };
+        await this.pictureRepository.save(picture);
+      }
+      return result;
     } catch (err) {
       switch (err.code) {
         case 'ER_DUP_ENTRY':

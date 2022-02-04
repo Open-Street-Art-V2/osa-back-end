@@ -7,7 +7,7 @@ export const imageFilter = (
   file: Express.Multer.File,
   callback,
 ) => {
-    console.log(req.body);
+  console.log(req.body);
   if (!extname(file.originalname).match(/\.(jpg|jpeg|png)$/)) {
     return callback(
       new HttpException(

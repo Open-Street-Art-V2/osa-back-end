@@ -32,11 +32,15 @@ export class ArtController {
   constructor(private readonly artService: ArtService) {}
 
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN, Role.USER)
   @Post()
-  async create(@Body() createArtDto: CreateArtDto) {
-    const art: Art = await this.artService.createArt(createArtDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createArtDto: CreateArtDto,
+  ) {
+    const filename = file.filename;
+    const art: Art = await this.artService.createArt(createArtDto, filename);
+
     return {
       statusCode: 201,
       art: art,
