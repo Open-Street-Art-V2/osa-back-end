@@ -25,9 +25,6 @@ import { ArtService } from './art.service';
 import { CreateArtDto } from './dto/create-art.dto';
 import { UpdateArtDto } from './dto/update-art.dto';
 import { GetArtsQuery } from './types/query-params.type';
-import { diskStorage } from 'multer';
-import fileName from 'src/utils/file_upload/filename';
-import { imageFilter } from 'src/utils/file_upload/filter';
 
 @Controller('art')
 @ApiTags('Art')
@@ -117,22 +114,11 @@ export class ArtController {
     };
   }
 
-  //TODO: @Ahmadou => Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
+  //TODO: Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
   // il te suffit à présent de stocker le nom de l'image dans la BDD,
   // tu trouveras le nom de l'image dans file.filename (ligne de code 134)
   @Post('image')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      fileFilter: imageFilter,
-      storage: diskStorage({
-        destination: '/home/tarek/tmp/images',
-        filename: fileName,
-      }),
-      limits: {
-        fileSize: 2097152
-      }
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(@UploadedFile() file: Express.Multer.File) {
     console.log(file.filename);
   }
