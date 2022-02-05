@@ -12,8 +12,9 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/roles/decorator/roles.decorator';
@@ -119,11 +120,19 @@ export class ArtController {
   }
 
   //TODO: Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
-  // il te suffit à présent de stocker le nom de l'image dans la BDD,
-  // tu trouveras le nom de l'image dans file.filename (ligne de code 134)
-  @Post('picture')
-  @UseInterceptors(FileInterceptor('file'))
-  public async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    console.log(file.filename);
+  @HttpCode(HttpStatus.CREATED)
+  @Post(':artId/picture')
+  @UseInterceptors(FilesInterceptor('files', 3))
+  public async uploadImage(
+    @Param('artId') artId: number,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    files.map(async (f) => {
+      console.log(f.filename);
+      await this.artService.createPicture(artId, f.filename);
+    });
+    return {
+      statusCode: 201,
+    };
   }
 }

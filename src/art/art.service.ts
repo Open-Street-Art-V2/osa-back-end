@@ -22,7 +22,7 @@ export class ArtService {
   public async createArt(createArtDto: CreateArtDto, filename: string) {
     try {
       const result = await this.artRepository.createArt(createArtDto);
-      if(filename){
+      if (filename) {
         const picture: Picture = {
           url: filename,
           art: result,
@@ -119,5 +119,39 @@ export class ArtService {
       );
     }
     return deleted;
+  }
+
+  public async createPicture(artId: number, filename: string) {
+    try {
+      const art = await this.artRepository.findOne(artId);
+      if (!art) {
+        throw new NotFoundException('Art not found');
+      }
+
+      //TODO: envoyer une exeption quand il y a déjà 3 images pour cette
+      // oeuvre dans la base de données
+      // const countPictures = await this.pictureRepository.count({
+      //   where: {
+      //     art: art,
+      //   },
+      // });
+      // if (countPictures === 3) {
+      //   throw new HttpException(
+      //     "Art with 'id':'" + artId + "' has already three pictures",
+      //     HttpStatus.NOT_ACCEPTABLE,
+      //   );
+      // }
+
+      const picture: Picture = {
+        url: filename,
+        art: art,
+      };
+      return await this.pictureRepository.save(picture);
+    } catch (err) {
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
