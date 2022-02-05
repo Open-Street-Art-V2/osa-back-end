@@ -121,7 +121,7 @@ export class ArtController {
   //TODO: Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
   // il te suffit à présent de stocker le nom de l'image dans la BDD,
   // tu trouveras le nom de l'image dans file.filename (ligne de code 134)
-  @Post('image')
+  @Post('picture')
   @UseInterceptors(FileInterceptor('file'))
   public async uploadImage(@UploadedFile() file: Express.Multer.File) {
     console.log(file.filename);
