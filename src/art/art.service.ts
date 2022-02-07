@@ -19,18 +19,17 @@ export class ArtService {
     @InjectRepository(Picture) private pictureRepository: Repository<Picture>,
   ) {}
 
-  public async createArt(createArtDto: CreateArtDto, filename: string) {
+  public async createArt(createArtDto: CreateArtDto, filenames?: string[]) {
     try {
       const result = await this.artRepository.createArt(createArtDto);
-      if (filename) {
-        const picture: Picture = {
-          url: filename,
-          art: result,
-        };
-        await this.pictureRepository.save(picture);
+      if (filenames) {
+        await this.createPictures(result.id, filenames);
       }
       return result;
     } catch (err) {
+      if (filenames) {
+        this.removePicturesFromFileSystem(filenames);
+      }
       switch (err.code) {
         case 'ER_DUP_ENTRY':
           throw new HttpException(
@@ -137,19 +136,7 @@ export class ArtService {
     // check the pictures number of the art
     if (3 - countPictures < filenames.length) {
       // remove pictures from the file system
-      const fs = require('fs');
-      try {
-        filenames.map((filename) => {
-          const path = `${process.env.IMAGE_DEST}/${filename}`;
-          fs.unlinkSync(path);
-        });
-      } catch (err) {
-        throw new HttpException(
-          'Something went wrong',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
+      this.removePicturesFromFileSystem(filenames);
       throw new HttpException(
         'Art with id ' + artId + ' has already ' + countPictures + ' pictures',
         HttpStatus.NOT_ACCEPTABLE,
@@ -166,5 +153,21 @@ export class ArtService {
       pictures.push(res);
     }
     return pictures;
+  }
+
+  private removePicturesFromFileSystem(filenames: string[]) {
+    // remove pictures from the file system
+    const fs = require('fs');
+    try {
+      filenames.map((filename) => {
+        const path = `${process.env.IMAGE_DEST}/${filename}`;
+        fs.unlinkSync(path);
+      });
+    } catch (err) {
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
