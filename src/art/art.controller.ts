@@ -121,18 +121,18 @@ export class ArtController {
 
   //TODO: Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
   @HttpCode(HttpStatus.CREATED)
-  @Post(':artId/picture')
+  @Post(':artId/pictures')
   @UseInterceptors(FilesInterceptor('files', 3))
-  public async uploadImage(
+  public async uploadPictures(
     @Param('artId') artId: number,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    files.map(async (f) => {
-      console.log(f.filename);
-      await this.artService.createPicture(artId, f.filename);
-    });
+    const filenames = files.map((f) => f.filename);
+    const pictures = await this.artService.createPictures(artId, filenames);
+
     return {
       statusCode: 201,
+      pictures: pictures,
     };
   }
 }

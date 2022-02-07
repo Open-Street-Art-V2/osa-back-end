@@ -121,37 +121,50 @@ export class ArtService {
     return deleted;
   }
 
-  public async createPicture(artId: number, filename: string) {
-    try {
-      const art = await this.artRepository.findOne(artId);
-      if (!art) {
-        throw new NotFoundException('Art not found');
+  public async createPictures(artId: number, filenames: string[]) {
+    // check if art exists
+    const art = await this.artRepository.findOne(artId);
+    if (!art) {
+      throw new NotFoundException('Art not found');
+    }
+
+    const countPictures = await this.pictureRepository.count({
+      where: {
+        art: art,
+      },
+    });
+
+    // check the pictures number of the art
+    if (3 - countPictures < filenames.length) {
+      // remove pictures from the file system
+      const fs = require('fs');
+      try {
+        filenames.map((filename) => {
+          const path = `${process.env.IMAGE_DEST}/${filename}`;
+          fs.unlinkSync(path);
+        });
+      } catch (err) {
+        throw new HttpException(
+          'Something went wrong',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
 
-      //TODO: envoyer une exeption quand il y a déjà 3 images pour cette
-      // oeuvre dans la base de données
-      // const countPictures = await this.pictureRepository.count({
-      //   where: {
-      //     art: art,
-      //   },
-      // });
-      // if (countPictures === 3) {
-      //   throw new HttpException(
-      //     "Art with 'id':'" + artId + "' has already three pictures",
-      //     HttpStatus.NOT_ACCEPTABLE,
-      //   );
-      // }
+      throw new HttpException(
+        'Art with id ' + artId + ' has already ' + countPictures + ' pictures',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
 
+    var pictures: Picture[] = [];
+    for (const filename of filenames) {
       const picture: Picture = {
         url: filename,
         art: art,
       };
-      return await this.pictureRepository.save(picture);
-    } catch (err) {
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const res = await this.pictureRepository.save(picture);
+      pictures.push(res);
     }
+    return pictures;
   }
 }
