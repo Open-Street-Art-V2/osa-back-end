@@ -35,12 +35,12 @@ export class Art {
   @Column()
   public city: string;
 
+  @OneToMany(() => Picture, (picture) => picture.art)
+  pictures?: Picture[];
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
-  @OneToMany(() => Picture, (picture) => picture.art)
-  pictures?: Picture[];
-
   public created_at?: Date;
 }

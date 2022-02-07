@@ -11,9 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   UseInterceptors,
-  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/roles/decorator/roles.decorator';
@@ -33,14 +33,20 @@ export class ArtController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 3))
   async create(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
   ) {
-    const filename = file.filename;
-    const art: Art = await this.artService.createArt(createArtDto, filename);
-
+    if (files) {
+      const filenames = files.map((f) => f.filename);
+      const art: Art = await this.artService.createArt(createArtDto, filenames);
+      return {
+        statusCode: 201,
+        art: art,
+      };
+    }
+    const art: Art = await this.artService.createArt(createArtDto);
     return {
       statusCode: 201,
       art: art,
@@ -119,11 +125,19 @@ export class ArtController {
   }
 
   //TODO: Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
-  // il te suffit à présent de stocker le nom de l'image dans la BDD,
-  // tu trouveras le nom de l'image dans file.filename (ligne de code 134)
-  @Post('picture')
-  @UseInterceptors(FileInterceptor('file'))
-  public async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    console.log(file.filename);
+  @HttpCode(HttpStatus.CREATED)
+  @Post(':artId/pictures')
+  @UseInterceptors(FilesInterceptor('files', 3))
+  public async uploadPictures(
+    @Param('artId') artId: number,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    const filenames = files.map((f) => f.filename);
+    const pictures = await this.artService.createPictures(artId, filenames);
+
+    return {
+      statusCode: 201,
+      pictures: pictures,
+    };
   }
 }
