@@ -143,7 +143,7 @@ export class ArtService {
       );
     }
 
-    var pictures: Picture[] = [];
+    const pictures: Picture[] = [];
     for (const filename of filenames) {
       const picture: Picture = {
         url: filename,
@@ -157,6 +157,7 @@ export class ArtService {
 
   private removePicturesFromFileSystem(filenames: string[]) {
     // remove pictures from the file system
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require('fs');
     try {
       filenames.map((filename) => {
