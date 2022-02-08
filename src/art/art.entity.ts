@@ -35,7 +35,7 @@ export class Art {
   @Column()
   public city: string;
 
-  @OneToMany(() => Picture, (picture) => picture.art)
+  @OneToMany(() => Picture, (picture) => picture.art, { eager: true })
   pictures?: Picture[];
 
   @CreateDateColumn({

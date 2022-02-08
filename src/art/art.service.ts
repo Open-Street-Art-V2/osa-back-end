@@ -46,7 +46,9 @@ export class ArtService {
   }
 
   public async getArts(): Promise<Art[]> {
-    return await this.artRepository.find();
+    const result = await this.artRepository.find();
+    console.log(result);
+    return result;
   }
 
   public async getArt(artId: number): Promise<Art> {
@@ -143,7 +145,7 @@ export class ArtService {
       );
     }
 
-    var pictures: Picture[] = [];
+    const pictures: Picture[] = [];
     for (const filename of filenames) {
       const picture: Picture = {
         url: filename,
