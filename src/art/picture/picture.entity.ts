@@ -3,7 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Unique,
 } from 'typeorm';
 import { Art } from '../art.entity';
@@ -11,13 +11,18 @@ import { Art } from '../art.entity';
 @Entity()
 @Unique(['url'])
 export class Picture {
-  @PrimaryGeneratedColumn()
-  public id?: number;
+  @PrimaryColumn()
+  public position: number;
 
   @Column()
   url: string;
 
-  @ManyToOne(() => Art, (art) => art.pictures)
+  @ManyToOne(() => Art, (art) => art.pictures, {
+    primary: true,
+    nullable: false,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+  })
   art?: Art;
 
   @CreateDateColumn({

@@ -124,7 +124,6 @@ export class ArtController {
     };
   }
 
-  //TODO: Les fichiers téléchargés sont stockés dans "~/tmp/images" (à changer plus tard bien sur),
   @HttpCode(HttpStatus.CREATED)
   @Post(':artId/pictures')
   @UseInterceptors(FilesInterceptor('files', 3))

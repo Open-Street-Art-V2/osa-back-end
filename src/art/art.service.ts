@@ -46,7 +46,8 @@ export class ArtService {
   }
 
   public async getArts(): Promise<Art[]> {
-    return await this.artRepository.find();
+    const result = await this.artRepository.find();
+    return result;
   }
 
   public async getArt(artId: number): Promise<Art> {
@@ -110,6 +111,11 @@ export class ArtService {
   }
 
   public async deleteArt(artId: number) {
+    const pictures: Picture[] = await this.pictureRepository.find({
+      where: { art: artId },
+    });
+    const picturesUrl: string[] = pictures.map((picture) => picture.url);
+    this.removePicturesFromFileSystem(picturesUrl);
     const deleted: DeleteResult = await this.artRepository.delete(artId);
     if (deleted.affected === 0) {
       throw new HttpException(
@@ -127,31 +133,33 @@ export class ArtService {
       throw new NotFoundException('Art not found');
     }
 
-    const countPictures = await this.pictureRepository.count({
-      where: {
-        art: art,
-      },
-    });
+    // const countPictures = await this.pictureRepository.count({
+    //   where: {
+    //     art: art,
+    //   },
+    // });
 
     // check the pictures number of the art
-    if (3 - countPictures < filenames.length) {
-      // remove pictures from the file system
-      this.removePicturesFromFileSystem(filenames);
-      throw new HttpException(
-        'Art with id ' + artId + ' has already ' + countPictures + ' pictures',
-        HttpStatus.NOT_ACCEPTABLE,
-      );
-    }
+    // if (3 - countPictures < filenames.length) {
+    //   // remove pictures from the file system
+    //   this.removePicturesFromFileSystem(filenames);
+    //   throw new HttpException(
+    //     'Art with id ' + artId + ' has already ' + countPictures + ' pictures',
+    //     HttpStatus.NOT_ACCEPTABLE,
+    //   );
+    // }
 
     const pictures: Picture[] = [];
-    for (const filename of filenames) {
+    filenames.forEach(async (item, index) => {
       const picture: Picture = {
-        url: filename,
+        position: index + 1,
+        url: item,
         art: art,
       };
       const res = await this.pictureRepository.save(picture);
       pictures.push(res);
-    }
+    });
+
     return pictures;
   }
 
@@ -162,7 +170,10 @@ export class ArtService {
     try {
       filenames.map((filename) => {
         const path = `${process.env.IMAGE_DEST}/${filename}`;
-        fs.unlinkSync(path);
+        fs.unlink(path, (err) => {
+          if (err) throw err;
+          else console.log(`Deleted image : ${filename}`);
+        });
       });
     } catch (err) {
       throw new HttpException(
