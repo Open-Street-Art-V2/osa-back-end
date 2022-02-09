@@ -13,6 +13,8 @@ import {
   UseInterceptors,
   UploadedFiles,
   HttpException,
+  Req,
+  UseFilters,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -20,6 +22,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/roles/decorator/roles.decorator';
 import { RoleGuard } from 'src/auth/roles/guards/role.guard';
 import { Role } from 'src/auth/roles/role.enum';
+import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { DeleteResult } from 'typeorm';
 import { Art } from './art.entity';
 import { ArtService } from './art.service';
@@ -34,10 +37,12 @@ export class ArtController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
+  @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
+    @Req() req
   ) {
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);

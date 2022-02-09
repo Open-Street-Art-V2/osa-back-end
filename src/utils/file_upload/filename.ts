@@ -1,8 +1,8 @@
-import { Request } from 'express';
+//import { Request } from 'express';
 import { extname } from 'path';
 
 export default function fileName(
-  req: Request,
+  req: any,
   file: Express.Multer.File,
   callback,
 ) {
@@ -10,5 +10,9 @@ export default function fileName(
   const filename = file.originalname.split('.')[0].slice(0, 4);
   const extension = extname(file.originalname);
   file.filename = filename + new Date().getTime() + extension;
+  if(!req.filenames){
+    req.filenames = [];
+  }
+  req.filenames.push(file.filename);
   callback(null, file.filename);
 }
