@@ -17,7 +17,7 @@ export class Art {
   @Column()
   public title: string;
 
-  @Column()
+  @Column({ nullable: true })
   public artist: string;
 
   @Column()
