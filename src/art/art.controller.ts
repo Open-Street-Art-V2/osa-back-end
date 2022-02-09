@@ -12,6 +12,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFiles,
+  HttpException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -38,19 +39,16 @@ export class ArtController {
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
   ) {
-    if (files) {
+    if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
       const art: Art = await this.artService.createArt(createArtDto, filenames);
       return {
         statusCode: 201,
         art: art,
       };
+    } else {
+      throw new HttpException("At least one picture must be provided!", HttpStatus.BAD_REQUEST);
     }
-    const art: Art = await this.artService.createArt(createArtDto);
-    return {
-      statusCode: 201,
-      art: art,
-    };
   }
 
   @Get()

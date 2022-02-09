@@ -22,14 +22,10 @@ export class ArtService {
   public async createArt(createArtDto: CreateArtDto, filenames?: string[]) {
     try {
       const result = await this.artRepository.createArt(createArtDto);
-      if (filenames) {
-        await this.createPictures(result.id, filenames);
-      }
+      await this.createPictures(result.id, filenames);
       return result;
     } catch (err) {
-      if (filenames) {
-        this.removePicturesFromFileSystem(filenames);
-      }
+      this.removePicturesFromFileSystem(filenames);
       switch (err.code) {
         case 'ER_DUP_ENTRY':
           throw new HttpException(
