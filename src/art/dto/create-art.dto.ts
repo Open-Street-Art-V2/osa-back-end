@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsNumberString, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsNumberString,
+  IsString,
+} from 'class-validator';
 
 // class Geo {
 //   @ApiProperty()

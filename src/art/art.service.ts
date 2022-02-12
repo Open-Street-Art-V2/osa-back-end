@@ -83,14 +83,32 @@ export class ArtService {
   public async editArt(
     artId: number,
     updateArtDto: UpdateArtDto,
+    filenames?: string[],
   ): Promise<Art> {
     const editedArt = await this.artRepository.findOne(artId);
+    const images: string[] = editedArt.pictures.map((elt) => elt.url);
     if (!editedArt) {
+      this.removePicturesFromFileSystem(filenames);
       throw new NotFoundException('Art not found');
     }
     try {
-      return await this.artRepository.editArt(updateArtDto, editedArt);
+      if (filenames) {
+        const result = await this.artRepository.editArt(
+          updateArtDto,
+          editedArt,
+        );
+        await this.createPictures(artId, filenames);
+        this.removePicturesFromFileSystem(images);
+        return result;
+      } else {
+        return await this.artRepository.editArt(updateArtDto, editedArt);
+      }
+      const result = await this.artRepository.editArt(updateArtDto, editedArt);
+      await this.createPictures(artId, filenames);
+      this.removePicturesFromFileSystem(images);
+      return result;
     } catch (err) {
+      this.removePicturesFromFileSystem(filenames);
       switch (err.code) {
         case 'ER_DUP_ENTRY':
           throw new HttpException(
@@ -99,7 +117,7 @@ export class ArtService {
           );
         default:
           throw new HttpException(
-            'Something went wrong',
+            'Something went wrong ici',
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
       }
