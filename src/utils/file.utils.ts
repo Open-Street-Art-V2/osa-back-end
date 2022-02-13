@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-import fs from 'fs';
+//import fs from 'fs'; ---> Don't delete if you use it here
 export const removePicturesFromFileSystem = (filenames: string[]) => {
   // remove pictures from the file system
+  const fs = require('fs');
 
   try {
     filenames.map((filename) => {

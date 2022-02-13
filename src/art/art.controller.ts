@@ -21,7 +21,10 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/roles/decorator/roles.decorator';
 import { RoleGuard } from 'src/auth/roles/guards/role.guard';
 import { Role } from 'src/auth/roles/role.enum';
-import { exceptionUploadFiles } from 'src/utils/file.utils';
+import {
+  exceptionUploadFiles,
+  removePicturesFromFileSystem,
+} from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { DeleteResult } from 'typeorm';
 import { Art } from './art.entity';
@@ -125,6 +128,8 @@ export class ArtController {
           art: art,
         };
       } else {
+        console.log(filenames);
+        removePicturesFromFileSystem(filenames);
         throw new HttpException(
           'File update exception',
           HttpStatus.BAD_REQUEST,
