@@ -42,6 +42,8 @@ export class ArtController {
   @Post()
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles(Role.ADMIN, Role.USER)
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
@@ -98,8 +100,8 @@ export class ArtController {
     };
   }
 
-  //@UseGuards(JwtAuthGuard, RoleGuard)
-  //@Roles(Role.ADMIN, Role.USER)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles(Role.ADMIN, Role.USER)
   @Patch(':artId')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
