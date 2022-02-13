@@ -10,7 +10,7 @@ export default function fileName(
   const filename = file.originalname.split('.')[0].slice(0, 4);
   const extension = extname(file.originalname);
   file.filename = filename + new Date().getTime() + extension;
-  if(!req.filenames){
+  if (!req.filenames) {
     req.filenames = [];
   }
   req.filenames.push(file.filename);

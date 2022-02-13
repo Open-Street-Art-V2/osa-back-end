@@ -7,11 +7,22 @@ import { Art } from './art.entity';
 export class ArtRepository extends Repository<Art> {
   public async createArt(createArtDto: CreateArtDto): Promise<Art> {
     const art: Art = { ...createArtDto };
+    console.log(art);
     return this.save(art);
   }
 
   public async editArt(updateArtDto: UpdateArtDto, editArt: Art): Promise<Art> {
-    const toEdit: Art = { ...editArt, ...updateArtDto };
+    const art: Art = new Art();
+    art.address = editArt.address;
+    art.artist = editArt.artist;
+    art.city = editArt.city;
+    art.description = editArt.description;
+    art.id = editArt.id;
+    art.latitude = editArt.latitude;
+    art.longitude = editArt.longitude;
+    art.title = editArt.title;
+    const toEdit: Art = { ...art, ...updateArtDto };
+    console.log(toEdit);
     return this.save(toEdit);
   }
 }

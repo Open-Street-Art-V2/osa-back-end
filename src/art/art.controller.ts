@@ -21,6 +21,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/roles/decorator/roles.decorator';
 import { RoleGuard } from 'src/auth/roles/guards/role.guard';
 import { Role } from 'src/auth/roles/role.enum';
+import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { DeleteResult } from 'typeorm';
 import { Art } from './art.entity';
@@ -94,8 +95,8 @@ export class ArtController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN, Role.USER)
+  //@UseGuards(JwtAuthGuard, RoleGuard)
+  //@Roles(Role.ADMIN, Role.USER)
   @Patch(':artId')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
@@ -110,19 +111,25 @@ export class ArtController {
     @Body() updateArtDto: UpdateArtDto,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    /*const art: Art = await this.artService.editArt(artId, updateArtDto);
-    };*/
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
-      const art: Art = await this.artService.editArt(
-        artId,
-        updateArtDto,
-        filenames,
-      );
-      return {
-        statusCode: 200,
-        art: art,
-      };
+
+      if (exceptionUploadFiles(filenames, updateArtDto.index)) {
+        const art: Art = await this.artService.editArt(
+          artId,
+          updateArtDto,
+          filenames,
+        );
+        return {
+          statusCode: 200,
+          art: art,
+        };
+      } else {
+        throw new HttpException(
+          'File update exception',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     } else {
       const art: Art = await this.artService.editArt(artId, updateArtDto);
       return {
