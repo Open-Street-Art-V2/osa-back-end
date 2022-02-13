@@ -86,7 +86,7 @@ export class ArtService {
     filenames?: string[],
   ): Promise<Art> {
     const editedArt = await this.artRepository.findOne(artId);
-    const images: string[] = editedArt.pictures.map((elt) => elt.url);
+    //const images: string[] = editedArt.pictures.map((elt) => elt.url);
     if (!editedArt) {
       this.removePicturesFromFileSystem(filenames);
       throw new NotFoundException('Art not found');
@@ -97,16 +97,76 @@ export class ArtService {
           updateArtDto,
           editedArt,
         );
-        await this.createPictures(artId, filenames);
-        this.removePicturesFromFileSystem(images);
+
+        switch (Number(updateArtDto.index)) {
+          case 1: {
+            const pictures: Picture[] = editedArt.pictures.filter(
+              (elt) => elt.position == 1,
+            );
+            const images: string[] = pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [1]);
+            this.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 2: {
+            const pictures: Picture[] = editedArt.pictures.filter(
+              (elt) => elt.position == 2,
+            );
+            const images: string[] = pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [2]);
+            this.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 3: {
+            const pictures: Picture[] = editedArt.pictures.filter(
+              (elt) => elt.position == 3,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [3]);
+            this.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 4: {
+            const pictures: Picture[] = editedArt.pictures.filter(
+              (elt) => elt.position == 1 || elt.position == 2,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [1, 2]);
+            this.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 5: {
+            const pictures: Picture[] = editedArt.pictures.filter(
+              (elt) => elt.position == 1 || elt.position == 3,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [1, 3]);
+            this.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 6: {
+            const pictures: Picture[] = editedArt.pictures.filter(
+              (elt) => elt.position == 3 || elt.position == 2,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [2, 3]);
+            this.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 7: {
+            const images: string[] = editedArt.pictures.map((elt) => elt.url);
+            await this.editPictures(artId, filenames, [1, 2, 3]);
+            this.removePicturesFromFileSystem(images);
+          }
+        }
         return result;
       } else {
         return await this.artRepository.editArt(updateArtDto, editedArt);
       }
-      const result = await this.artRepository.editArt(updateArtDto, editedArt);
-      await this.createPictures(artId, filenames);
-      this.removePicturesFromFileSystem(images);
-      return result;
     } catch (err) {
       this.removePicturesFromFileSystem(filenames);
       switch (err.code) {
@@ -167,6 +227,31 @@ export class ArtService {
     filenames.forEach(async (item, index) => {
       const picture: Picture = {
         position: index + 1,
+        url: item,
+        art: art,
+      };
+      const res = await this.pictureRepository.save(picture);
+      pictures.push(res);
+    });
+
+    return pictures;
+  }
+
+  public async editPictures(
+    artId: number,
+    filenames: string[],
+    tabIndex: number[],
+  ) {
+    // check if art exists
+    const art = await this.artRepository.findOne(artId);
+    if (!art) {
+      throw new NotFoundException('Art not found');
+    }
+
+    const pictures: Picture[] = [];
+    filenames.forEach(async (item, index) => {
+      const picture: Picture = {
+        position: tabIndex[index],
         url: item,
         art: art,
       };

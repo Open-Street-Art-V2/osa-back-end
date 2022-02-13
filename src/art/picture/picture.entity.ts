@@ -21,7 +21,7 @@ export class Picture {
     primary: true,
     nullable: false,
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
   })
   art?: Art;
 
