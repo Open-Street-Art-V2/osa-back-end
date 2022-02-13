@@ -32,6 +32,7 @@ export class AuthController {
     return {
       statusCode: '200',
       user: request.user,
+      jwt: jwt.access_token,
     };
   }
 

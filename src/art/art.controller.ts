@@ -13,7 +13,6 @@ import {
   UseInterceptors,
   UploadedFiles,
   HttpException,
-  Req,
   UseFilters,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -42,7 +41,6 @@ export class ArtController {
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
-    @Req() req
   ) {
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
@@ -52,7 +50,10 @@ export class ArtController {
         art: art,
       };
     } else {
-      throw new HttpException("At least one picture must be provided!", HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'At least one picture must be provided!',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -96,6 +97,8 @@ export class ArtController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.ADMIN, Role.USER)
   @Patch(':artId')
+  @UseFilters(CreateArtBadRequestFilter)
+  @UseInterceptors(FilesInterceptor('files', 3))
   @ApiParam({ description: 'Art ID', name: 'artId', type: 'number' })
   @ApiBody({
     description: 'Fields to edit',
@@ -105,16 +108,32 @@ export class ArtController {
   public async update(
     @Param('artId') artId: number,
     @Body() updateArtDto: UpdateArtDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    const art: Art = await this.artService.editArt(artId, updateArtDto);
-    return {
-      statusCode: 200,
-      art: art,
-    };
+    /*const art: Art = await this.artService.editArt(artId, updateArtDto);
+    };*/
+    if (files && files.length >= 1) {
+      const filenames = files.map((f) => f.filename);
+      const art: Art = await this.artService.editArt(
+        artId,
+        updateArtDto,
+        filenames,
+      );
+      return {
+        statusCode: 200,
+        art: art,
+      };
+    } else {
+      const art: Art = await this.artService.editArt(artId, updateArtDto);
+      return {
+        statusCode: 200,
+        art: art,
+      };
+    }
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.USER)
   @Delete('/:artId')
   public async remove(@Param('artId') artId: number) {
     const art: DeleteResult = await this.artService.deleteArt(artId);
