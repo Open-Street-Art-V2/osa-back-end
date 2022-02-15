@@ -23,7 +23,7 @@ import { RoleGuard } from 'src/auth/roles/guards/role.guard';
 import { Role } from 'src/auth/roles/role.enum';
 import {
   exceptionUploadFiles,
-  removePicturesFromFileSystem,
+  //removePicturesFromFileSystem,
 } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { DeleteResult } from 'typeorm';
@@ -31,19 +31,22 @@ import { Art } from './art.entity';
 import { ArtService } from './art.service';
 import { CreateArtDto } from './dto/create-art.dto';
 import { UpdateArtDto } from './dto/update-art.dto';
+//import { PictureService } from './picture/picture.service';
 import { GetArtsQuery } from './types/query-params.type';
 
 @Controller('art')
 @ApiTags('Art')
 export class ArtController {
-  constructor(private readonly artService: ArtService) {}
+  constructor(
+    private readonly artService: ArtService, //private readonly pictureService: PictureService,
+  ) {}
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN, Role.USER)
+  //@UseGuards(JwtAuthGuard, RoleGuard)
+  //@Roles(Role.ADMIN)
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
@@ -100,8 +103,8 @@ export class ArtController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN, Role.USER)
+  //@UseGuards(JwtAuthGuard, RoleGuard)
+  //@Roles(Role.ADMIN, Role.USER)
   @Patch(':artId')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
@@ -118,25 +121,17 @@ export class ArtController {
   ) {
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
-
-      if (exceptionUploadFiles(filenames, updateArtDto.index)) {
-        const art: Art = await this.artService.editArt(
-          artId,
-          updateArtDto,
-          filenames,
-        );
-        return {
-          statusCode: 200,
-          art: art,
-        };
-      } else {
-        console.log(filenames);
-        removePicturesFromFileSystem(filenames);
-        throw new HttpException(
-          'File update exception',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // Check if numbers of files matches index
+      exceptionUploadFiles(filenames, updateArtDto.index);
+      const art: Art = await this.artService.editArt(
+        artId,
+        updateArtDto,
+        filenames,
+      );
+      return {
+        statusCode: 200,
+        art: art,
+      };
     } else {
       const art: Art = await this.artService.editArt(artId, updateArtDto);
       return {
@@ -160,7 +155,7 @@ export class ArtController {
     };
   }
 
-  @HttpCode(HttpStatus.CREATED)
+  /*@HttpCode(HttpStatus.CREATED)
   @Post(':artId/pictures')
   @UseInterceptors(FilesInterceptor('files', 3))
   public async uploadPictures(
@@ -168,11 +163,12 @@ export class ArtController {
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
     const filenames = files.map((f) => f.filename);
-    const pictures = await this.artService.createPictures(artId, filenames);
+    const getArt=this.artService.getArt(artId);
+    const pictures = await this.pictureService.createPictures(artId, filenames);
 
     return {
       statusCode: 201,
       pictures: pictures,
     };
-  }
+  }*/
 }

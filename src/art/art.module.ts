@@ -9,6 +9,7 @@ import { diskStorage } from 'multer';
 import fileName from 'src/utils/file_upload/filename';
 import { imageFilter } from 'src/utils/file_upload/filter';
 import { Picture } from './picture/picture.entity';
+import { PictureService } from './picture/picture.service';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { Picture } from './picture/picture.entity';
       inject: [ConfigService],
     }),
   ],
-  providers: [ArtService],
+  providers: [ArtService, PictureService],
   controllers: [ArtController],
 })
 export class ArtModule {}
