@@ -22,7 +22,7 @@ export class ArtService {
     @InjectRepository(Picture) private pictureRepository: Repository<Picture>,
   ) {}
 
-  public async createArt(createArtDto: CreateArtDto, filenames?: string[]) {
+  public async createArt(createArtDto: CreateArtDto, filenames: string[]) {
     try {
       const result = await this.artRepository.createArt(createArtDto);
       const art = await this.artRepository.findOne(result.id);
