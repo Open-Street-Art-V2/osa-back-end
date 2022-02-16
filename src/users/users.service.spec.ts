@@ -84,7 +84,7 @@ describe('UsersService', () => {
       repository.delete.mockResolvedValue(deleteResult);
       expect(repository.delete).not.toHaveBeenCalled();
 
-      const id: number = 5;
+      const id = 5;
       const result = await service.deleteUser(id);
       expect(repository.delete).toHaveBeenLastCalledWith({ id: id });
       expect(result).toEqual({ raw: [], affected: 1 });
@@ -101,7 +101,7 @@ describe('UsersService', () => {
       repository.editPassword.mockResolvedValue(updateResult);
       expect(repository.editPassword).not.toHaveBeenCalled();
 
-      const id: number = 5;
+      const id = 5;
       const passwordDTO: PasswordDTO = { password: 'newPassword' };
       const result = await service.changePassword(
         { password: 'newPassword' },
@@ -125,7 +125,7 @@ describe('UsersService', () => {
       repository.update.mockResolvedValue(updateResult);
       expect(repository.update).not.toHaveBeenCalled();
 
-      const id: number = 5;
+      const id = 5;
       const updateUserProfileDTO: UpdateUserProfileDTO = {
         name: 'Notme',
         firstname: 'Notme',
@@ -150,7 +150,7 @@ describe('UsersService', () => {
       repository.update.mockResolvedValue(updateResult);
       expect(repository.update).not.toHaveBeenCalled();
 
-      const id: number = 5;
+      const id = 5;
       const role = Role.ADMIN;
 
       const result = await service.changeRole(id, role);

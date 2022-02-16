@@ -3,6 +3,7 @@ import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 //import fs from 'fs'; ---> Don't delete if you use it here
 export const removePicturesFromFileSystem = (filenames: string[]) => {
   // remove pictures from the file system
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fs = require('fs');
 
   try {
