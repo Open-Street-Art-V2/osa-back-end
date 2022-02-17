@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   Query,
   HttpCode,
   HttpStatus,
@@ -17,21 +16,15 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { Roles } from 'src/auth/roles/decorator/roles.decorator';
-import { RoleGuard } from 'src/auth/roles/guards/role.guard';
+import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
-import {
-  exceptionUploadFiles,
-  //removePicturesFromFileSystem,
-} from 'src/utils/file.utils';
+import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { DeleteResult } from 'typeorm';
 import { Art } from './art.entity';
 import { ArtService } from './art.service';
 import { CreateArtDto } from './dto/create-art.dto';
 import { UpdateArtDto } from './dto/update-art.dto';
-//import { PictureService } from './picture/picture.service';
 import { GetArtsQuery } from './types/query-params.type';
 
 @Controller('art')
@@ -45,8 +38,7 @@ export class ArtController {
   @Post()
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN)
+  @JwtAuth(Role.ADMIN)
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
@@ -103,8 +95,7 @@ export class ArtController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.ADMIN, Role.USER)
+  @JwtAuth(Role.ADMIN)
   @Patch(':artId')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
@@ -141,8 +132,7 @@ export class ArtController {
     }
   }
 
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.USER)
+  @JwtAuth(Role.ADMIN)
   @Delete('/:artId')
   public async remove(@Param('artId') artId: number) {
     const art: DeleteResult = await this.artService.deleteArt(artId);

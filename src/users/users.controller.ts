@@ -15,7 +15,7 @@ import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 import { UpdateUserRoleDTO } from './dto/update-user-role.dto';
 import { UsersService } from './users.service';
 
-@Controller('api/users')
+@Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
