@@ -1,4 +1,5 @@
-import { Proposition } from 'src/proposition/entities/proposition.entity';
+import { Art } from 'src/art/art.entity';
+import { Picture } from 'src/art/picture/picture.entity';
 import { User } from 'src/users/user.entity';
 import {
   Column,
@@ -7,13 +8,10 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
-import { Picture } from './picture/picture.entity';
 
 @Entity()
-@Unique(['title'])
-export class Art {
+export class Proposition {
   @PrimaryGeneratedColumn()
   public id?: number;
 
@@ -54,4 +52,8 @@ export class Art {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public created_at?: Date;
+  @ManyToOne(() => Art, (art) => art.id, {
+    eager: true,
+  })
+  art: Art;
 }
