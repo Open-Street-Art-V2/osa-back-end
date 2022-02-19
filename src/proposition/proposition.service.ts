@@ -1,15 +1,19 @@
 /* eslint-disable */
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-// import { Art } from 'src/art/art.entity';
-// import { ArtRepository } from 'src/art/art.repository';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
 import { Repository } from 'typeorm';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
+import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { Proposition } from './entities/proposition.entity';
+import { PropPicture } from './proposition-picture/proposition-picture.entity';
 import { PropPictureService } from './proposition-picture/proposition-picture.service';
-// import { UpdatePropositionDto } from './dto/update-proposition.dto';
 
 @Injectable()
 export class PropositionService {
@@ -17,7 +21,6 @@ export class PropositionService {
     @InjectRepository(Proposition)
     private propRepository: Repository<Proposition>,
     @InjectRepository(UsersRepository) private userRepository: UsersRepository,
-    //@InjectRepository(ArtRepository) private artRepository: ArtRepository,
     @Inject(PropPictureService) private propPicService: PropPictureService,
   ) {}
   async create(
@@ -54,19 +57,136 @@ export class PropositionService {
     }
   }
 
-  findAll() {
-    return `This action returns all proposition`;
+  async findAll() {
+    return await this.propRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} proposition`;
+  async findOne(id: number) {
+    try {
+      const prop: Proposition = await this.propRepository.findOne(id);
+      if (!prop)
+        throw new NotFoundException(`Proposition with id:${id} was not found`);
+      return prop;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  update(id: number /*updatePropositionDto: UpdatePropositionDto*/) {
-    return `This action updates a #${id} proposition`;
+  async update(
+    id: number,
+    userId: number,
+    updatePropositionDto: UpdatePropositionDto,
+    filenames?: string[],
+  ) {
+    try {
+      const propToEdit = await this.propRepository.findOne(id);
+      if (!propToEdit) {
+        if (filenames && filenames.length > 0)
+          this.propPicService.removePicturesFromFileSystem(filenames);
+        throw new NotFoundException('Art not found');
+      }
+      if (userId !== propToEdit.user.id) {
+        throw new UnauthorizedException(
+          'Must own the proposition to be able to edit it',
+        );
+      }
+      const { index, ...fieldsToUpdate } = updatePropositionDto;
+      const result = await this.propRepository.update(
+        { id: id },
+        { ...fieldsToUpdate },
+      );
+      console.log(result);
+      console.log(fieldsToUpdate);
+      if (filenames) {
+        switch (index) {
+          case 1: {
+            const pictures: PropPicture[] = propToEdit.pictures.filter(
+              (elt) => elt.position == 1,
+            );
+            const images: string[] = pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [1], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 2: {
+            const pictures: PropPicture[] = propToEdit.pictures.filter(
+              (elt) => elt.position == 2,
+            );
+            const images: string[] = pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [2], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 3: {
+            const pictures: PropPicture[] = propToEdit.pictures.filter(
+              (elt) => elt.position == 3,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [3], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 4: {
+            const pictures: PropPicture[] = propToEdit.pictures.filter(
+              (elt) => elt.position == 1 || elt.position == 2,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [1, 2], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 5: {
+            const pictures: PropPicture[] = propToEdit.pictures.filter(
+              (elt) => elt.position == 1 || elt.position == 3,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [1, 3], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 6: {
+            const pictures: PropPicture[] = propToEdit.pictures.filter(
+              (elt) => elt.position == 3 || elt.position == 2,
+            );
+
+            const images: string[] = pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [2, 3], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+            break;
+          }
+          case 7: {
+            const images: string[] = propToEdit.pictures.map((elt) => elt.url);
+            this.propPicService.editPictures(filenames, [1, 2, 3], propToEdit);
+            this.propPicService.removePicturesFromFileSystem(images);
+          }
+          default:
+            break;
+        }
+      }
+    } catch (err) {
+      throw err;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} proposition`;
+  async remove(id: number, user: any) {
+    try {
+      const prop: Proposition = await this.propRepository.findOne(id);
+      if (!prop)
+        throw new NotFoundException(`Proposition with id:${id} was not found`);
+      if (prop.user.id === user.id || user.role === 'ROLE_ADMIN') {
+        const pics: string[] = prop.pictures.map((pic) => pic.url);
+        await this.propPicService.removePicturesFromFileSystem(pics);
+        return await this.propRepository.remove(prop);
+      } else {
+        throw new UnauthorizedException(
+          'Must own the proposition to be able to delete it',
+        );
+      }
+    } catch (err) {
+      throw err;
+    }
   }
 }

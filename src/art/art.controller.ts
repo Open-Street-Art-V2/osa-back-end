@@ -108,7 +108,7 @@ export class ArtController {
   @ApiParam({ description: 'Art ID', name: 'artId', type: 'number' })
   @ApiBody({
     description: 'Fields to edit',
-    type: CreateArtDto,
+    type: UpdateArtDto,
     required: true,
   })
   public async update(
@@ -120,22 +120,14 @@ export class ArtController {
       const filenames = files.map((f) => f.filename);
       // Check if numbers of files matches index
       exceptionUploadFiles(filenames, updateArtDto.index);
-      const art: Art = await this.artService.editArt(
-        artId,
-        updateArtDto,
-        filenames,
-      );
-      return {
-        statusCode: 200,
-        art: art,
-      };
+      await this.artService.editArt(artId, updateArtDto, filenames);
     } else {
-      const art: Art = await this.artService.editArt(artId, updateArtDto);
-      return {
-        statusCode: 200,
-        art: art,
-      };
+      await this.artService.editArt(artId, updateArtDto);
     }
+    return {
+      statusCode: 200,
+      message: `Proposition with id:${artId} updated successfully`,
+    };
   }
 
   @JwtAuth(Role.ADMIN)

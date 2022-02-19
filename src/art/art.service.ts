@@ -111,11 +111,13 @@ export class ArtService {
     }
     try {
       if (filenames) {
+        //FIXME: @Ahmadou: Mettre ce bloc avant if(filenames) et enlever le else en bas
         const result = await this.artRepository.editArt(
           updateArtDto,
           editedArt,
         );
 
+        //FIXME: @Ahmadou: Je pense que ce bloc est inutile sauf si je rate quelque chose
         const art = await this.artRepository.findOne(artId);
         if (!art) {
           throw new NotFoundException('Art not found');

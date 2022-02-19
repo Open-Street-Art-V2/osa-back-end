@@ -14,14 +14,17 @@ import {
   UseFilters,
   UseInterceptors,
   HttpException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBody } from '@nestjs/swagger';
 import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
+import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
+import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { PropositionService } from './proposition.service';
-//import { UpdatePropositionDto } from './dto/update-proposition.dto';
 
 @Controller('proposition')
 export class PropositionController {
@@ -37,7 +40,6 @@ export class PropositionController {
     @Body() createPropositionDto: CreatePropositionDto,
     @Req() request: any /*@Body() createPropositionDto: CreatePropositionDto*/,
   ) {
-    console.log(files);
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
       await this.propositionService.create(
@@ -58,25 +60,59 @@ export class PropositionController {
   }
 
   @Get()
-  findAll() {
+  @JwtAuth(Role.ADMIN)
+  async findAll() {
     return this.propositionService.findAll();
   }
 
   @Get(':id')
+  @JwtAuth(Role.USER)
   findOne(@Param('id') id: string) {
     return this.propositionService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
-    @Param('id')
-    id: string /*@Body() updatePropositionDto: UpdatePropositionDto*/,
+  @JwtAuth(Role.USER)
+  @UseFilters(CreateArtBadRequestFilter)
+  @UseInterceptors(FilesInterceptor('files', 3))
+  @ApiBody({
+    description: 'Fields to edit',
+    type: UpdatePropositionDto,
+    required: true,
+  })
+  async update(
+    @Param('id', ParseIntPipe)
+    propId: number,
+    @Body() updatePropositionDto: UpdatePropositionDto,
+    @Req() request: any,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    return this.propositionService.update(+id /*updatePropositionDto*/);
+    if (files && files.length >= 1) {
+      const filenames = files.map((f) => f.filename);
+      // Check if numbers of files matches index
+      exceptionUploadFiles(filenames, updatePropositionDto.index);
+      await this.propositionService.update(
+        +propId,
+        request.user.id,
+        updatePropositionDto,
+        filenames,
+      );
+    } else {
+      await this.propositionService.update(
+        propId,
+        request.user.id,
+        updatePropositionDto,
+      );
+    }
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Proposition with id:${propId} updated successfully`,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.propositionService.remove(+id);
+  @JwtAuth(Role.ADMIN, Role.USER)
+  remove(@Param('id') id: string, @Req() request: any) {
+    return this.propositionService.remove(+id, request.user);
   }
 }

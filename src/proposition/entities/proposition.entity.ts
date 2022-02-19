@@ -45,6 +45,7 @@ export class Proposition {
 
   @ManyToOne(() => User, (user) => user.propositions, {
     nullable: true,
+    eager: true,
   })
   user: User;
 
