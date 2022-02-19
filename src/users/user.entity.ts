@@ -1,5 +1,6 @@
 import { Art } from 'src/art/art.entity';
 import { Role } from 'src/auth/roles/role.enum';
+import { Proposition } from 'src/proposition/entities/proposition.entity';
 import {
   Column,
   CreateDateColumn,
@@ -41,6 +42,9 @@ export class User {
     eager: true,
   })
   arts: Art[];
+
+  @OneToMany(() => Proposition, (proposition) => proposition.user)
+  propositions?: Proposition[];
 
   @CreateDateColumn({
     type: 'timestamp',

@@ -53,7 +53,7 @@ export class ArtController {
         filenames,
       );
       return {
-        statusCode: 201,
+        statusCode: HttpStatus.CREATED,
         art: art,
       };
     } else {

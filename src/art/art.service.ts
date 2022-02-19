@@ -34,6 +34,7 @@ export class ArtService {
       const user: User = await this.userRepository.findOne({
         where: { id: userId },
       });
+      if (!user) throw new NotFoundException('User not found');
       const result = await this.artRepository.createArt(createArtDto, user);
       const art = await this.artRepository.findOne(result.id);
       if (!art) {
