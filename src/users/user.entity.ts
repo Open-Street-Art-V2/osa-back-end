@@ -1,8 +1,10 @@
+import { Art } from 'src/art/art.entity';
 import { Role } from 'src/auth/roles/role.enum';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -33,6 +35,12 @@ export class User {
 
   @Column('enum', { enum: Role })
   role: Role;
+
+  @OneToMany(() => Art, (art) => art.user, {
+    nullable: true,
+    eager: true,
+  })
+  arts: Art[];
 
   @CreateDateColumn({
     type: 'timestamp',

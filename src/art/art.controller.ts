@@ -13,6 +13,7 @@ import {
   UploadedFiles,
   HttpException,
   UseFilters,
+  Req,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -42,10 +43,15 @@ export class ArtController {
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,
+    @Req() request: any,
   ) {
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
-      const art: Art = await this.artService.createArt(createArtDto, filenames);
+      const art: Art = await this.artService.createArt(
+        createArtDto,
+        request.user.id,
+        filenames,
+      );
       return {
         statusCode: 201,
         art: art,

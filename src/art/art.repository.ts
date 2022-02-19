@@ -2,11 +2,12 @@ import { UpdateArtDto } from './dto/update-art.dto';
 import { CreateArtDto } from './dto/create-art.dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { Art } from './art.entity';
+import { User } from 'src/users/user.entity';
 
 @EntityRepository(Art)
 export class ArtRepository extends Repository<Art> {
-  public async createArt(createArtDto: CreateArtDto): Promise<Art> {
-    const art: Art = { ...createArtDto };
+  public async createArt(createArtDto: CreateArtDto, user: User): Promise<Art> {
+    const art: Art = { ...createArtDto, user };
     console.log(art);
     return this.save(art);
   }

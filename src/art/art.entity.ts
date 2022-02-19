@@ -1,7 +1,9 @@
+import { User } from 'src/users/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
@@ -37,6 +39,11 @@ export class Art {
 
   @OneToMany(() => Picture, (picture) => picture.art, { eager: true })
   pictures?: Picture[];
+
+  @ManyToOne(() => User, (user) => user.arts, {
+    nullable: true,
+  })
+  user: User;
 
   @CreateDateColumn({
     type: 'timestamp',

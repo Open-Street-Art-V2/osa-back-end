@@ -10,10 +10,11 @@ import fileName from 'src/utils/file_upload/filename';
 import { imageFilter } from 'src/utils/file_upload/filter';
 import { Picture } from './picture/picture.entity';
 import { PictureService } from './picture/picture.service';
+import { UsersRepository } from 'src/users/user.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ArtRepository, Picture]),
+    TypeOrmModule.forFeature([ArtRepository, Picture, UsersRepository]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
