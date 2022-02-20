@@ -6,6 +6,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Art } from 'src/art/art.entity';
+import { ArtRepository } from 'src/art/art.repository';
+import { Picture } from 'src/art/picture/picture.entity';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
 import { Repository } from 'typeorm';
@@ -21,6 +24,8 @@ export class PropositionService {
     @InjectRepository(Proposition)
     private propRepository: Repository<Proposition>,
     @InjectRepository(UsersRepository) private userRepository: UsersRepository,
+    @InjectRepository(ArtRepository) private artRepository: ArtRepository,
+    @InjectRepository(Picture) private picRepository: Repository<Picture>,
     @Inject(PropPictureService) private propPicService: PropPictureService,
   ) {}
   async create(
@@ -35,15 +40,8 @@ export class PropositionService {
         },
       });
       if (!user) throw new NotFoundException('User not found');
-      // const art: Art = await this.artRepository.findOne({
-      //   where: {
-      //     id: createPropositionDto.artId,
-      //   },
-      // });
-      // if (!art) throw new NotFoundException('Art not found');
-      const { /*artId,*/ ...prop } = {
+      const { ...prop } = {
         ...createPropositionDto,
-        // art: art,
         user: user,
       };
       const proposition = await this.propRepository.save(prop);
@@ -188,5 +186,37 @@ export class PropositionService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async validate(props: number[]) {
+    let result = { validated: [], notFound: [] };
+    try {
+      await Promise.all(
+        props.map(async (item) => {
+          const prop = await this.propRepository.findOne(item);
+          if (prop) {
+            const { id, art, ...newArt }: { id?: number; art?: Art } & Art =
+              prop;
+            const savedArt = await this.artRepository.save(newArt);
+            if (newArt.pictures && newArt.pictures.length > 0) {
+              const pictures: Picture[] = [];
+              newArt.pictures.forEach((pic) => {
+                const picture: Picture = { ...pic, art: savedArt };
+                pictures.push(picture);
+              });
+              await this.picRepository.save(pictures);
+              await this.propRepository.remove(prop);
+            }
+            result.validated.push(item);
+          } else {
+            result.notFound.push(item);
+          }
+        }),
+      );
+    } catch (err) {
+      throw err;
+    }
+    console.log(result);
+    return result;
   }
 }

@@ -12,6 +12,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { diskStorage } from 'multer';
 import fileName from 'src/utils/file_upload/filename';
 import { imageFilter } from 'src/utils/file_upload/filter';
+import { Picture } from 'src/art/picture/picture.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { imageFilter } from 'src/utils/file_upload/filter';
       UsersRepository,
       ArtRepository,
       PropPicture,
+      Picture,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

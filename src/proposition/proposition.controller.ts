@@ -24,6 +24,7 @@ import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
 import { UpdatePropositionDto } from './dto/update-proposition.dto';
+import { ValidatePropDto } from './dto/validate-proposition.dto';
 import { PropositionService } from './proposition.service';
 
 @Controller('proposition')
@@ -112,7 +113,13 @@ export class PropositionController {
 
   @Delete(':id')
   @JwtAuth(Role.ADMIN, Role.USER)
-  remove(@Param('id') id: string, @Req() request: any) {
-    return this.propositionService.remove(+id, request.user);
+  async remove(@Param('id') id: string, @Req() request: any) {
+    return await this.propositionService.remove(+id, request.user);
+  }
+
+  @Post('validate')
+  @JwtAuth(Role.ADMIN)
+  async validate(@Body() validatePropDto: ValidatePropDto) {
+    return this.propositionService.validate(validatePropDto.propositions);
   }
 }
