@@ -1,5 +1,6 @@
-import { Proposition } from 'src/proposition/entities/proposition.entity';
+import { Art } from 'src/art/art.entity';
 import { User } from 'src/users/user.entity';
+import { PropPicture } from '../proposition-picture/proposition-picture.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,11 +10,10 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Picture } from './picture/picture.entity';
 
 @Entity()
 @Unique(['title'])
-export class Art {
+export class Proposition {
   @PrimaryGeneratedColumn()
   public id?: number;
 
@@ -38,16 +38,21 @@ export class Art {
   @Column()
   public city: string;
 
-  @OneToMany(() => Picture, (picture) => picture.art, { eager: true })
-  pictures?: Picture[];
+  @OneToMany(() => PropPicture, (picture) => picture.proposition, {
+    eager: true,
+  })
+  pictures?: PropPicture[];
 
-  @ManyToOne(() => User, (user) => user.arts, {
+  @ManyToOne(() => User, (user) => user.propositions, {
     nullable: true,
+    eager: true,
   })
   user: User;
 
-  @OneToMany(() => Proposition, (proposition) => proposition.art)
-  proposition?: Proposition[];
+  @ManyToOne(() => Art, (art) => art.id, {
+    eager: true,
+  })
+  art?: Art;
 
   @CreateDateColumn({
     type: 'timestamp',

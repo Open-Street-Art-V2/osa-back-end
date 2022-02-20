@@ -13,6 +13,8 @@ import { Art } from './art.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { Picture } from './picture/picture.entity';
 import { PictureService } from './picture/picture.service';
+import { UsersRepository } from 'src/users/user.repository';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class ArtService {
@@ -20,11 +22,20 @@ export class ArtService {
     @Inject(PictureService) private pictureService: PictureService,
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
     @InjectRepository(Picture) private pictureRepository: Repository<Picture>,
+    @InjectRepository(UsersRepository) private userRepository: UsersRepository,
   ) {}
 
-  public async createArt(createArtDto: CreateArtDto, filenames: string[]) {
+  public async createArt(
+    createArtDto: CreateArtDto,
+    userId: number,
+    filenames: string[],
+  ) {
     try {
-      const result = await this.artRepository.createArt(createArtDto);
+      const user: User = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+      if (!user) throw new NotFoundException('User not found');
+      const result = await this.artRepository.createArt(createArtDto, user);
       const art = await this.artRepository.findOne(result.id);
       if (!art) {
         throw new NotFoundException('Art not found');
@@ -41,7 +52,7 @@ export class ArtService {
           );
         default:
           throw new HttpException(
-            'Something went wrong',
+            err.message,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
       }
@@ -100,11 +111,13 @@ export class ArtService {
     }
     try {
       if (filenames) {
+        //FIXME: @Ahmadou: Mettre ce bloc avant if(filenames) et enlever le else en bas
         const result = await this.artRepository.editArt(
           updateArtDto,
           editedArt,
         );
 
+        //FIXME: @Ahmadou: Je pense que ce bloc est inutile sauf si je rate quelque chose
         const art = await this.artRepository.findOne(artId);
         if (!art) {
           throw new NotFoundException('Art not found');
