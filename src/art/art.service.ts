@@ -110,26 +110,15 @@ export class ArtService {
       throw new NotFoundException('Art not found');
     }
     try {
+      const result = await this.artRepository.editArt(updateArtDto, editedArt);
       if (filenames) {
-        //FIXME: @Ahmadou: Mettre ce bloc avant if(filenames) et enlever le else en bas
-        const result = await this.artRepository.editArt(
-          updateArtDto,
-          editedArt,
-        );
-
-        //FIXME: @Ahmadou: Je pense que ce bloc est inutile sauf si je rate quelque chose
-        const art = await this.artRepository.findOne(artId);
-        if (!art) {
-          throw new NotFoundException('Art not found');
-        }
-
         switch (Number(updateArtDto.index)) {
           case 1: {
             const pictures: Picture[] = editedArt.pictures.filter(
               (elt) => elt.position == 1,
             );
             const images: string[] = pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [1], art);
+            this.pictureService.editPictures(filenames, [1], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
             break;
           }
@@ -138,7 +127,7 @@ export class ArtService {
               (elt) => elt.position == 2,
             );
             const images: string[] = pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [2], art);
+            this.pictureService.editPictures(filenames, [2], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
             break;
           }
@@ -148,7 +137,7 @@ export class ArtService {
             );
 
             const images: string[] = pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [3], art);
+            this.pictureService.editPictures(filenames, [3], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
             break;
           }
@@ -158,7 +147,7 @@ export class ArtService {
             );
 
             const images: string[] = pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [1, 2], art);
+            this.pictureService.editPictures(filenames, [1, 2], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
             break;
           }
@@ -168,7 +157,7 @@ export class ArtService {
             );
 
             const images: string[] = pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [1, 3], art);
+            this.pictureService.editPictures(filenames, [1, 3], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
             break;
           }
@@ -178,13 +167,13 @@ export class ArtService {
             );
 
             const images: string[] = pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [2, 3], art);
+            this.pictureService.editPictures(filenames, [2, 3], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
             break;
           }
           case 7: {
             const images: string[] = editedArt.pictures.map((elt) => elt.url);
-            this.pictureService.editPictures(filenames, [1, 2, 3], art);
+            this.pictureService.editPictures(filenames, [1, 2, 3], editedArt);
             this.pictureService.removePicturesFromFileSystem(images);
           }
         }
