@@ -39,7 +39,7 @@ export class ArtController {
   @Post()
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
-  @JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.USER)
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createArtDto: CreateArtDto,

@@ -61,7 +61,7 @@ export class PropositionController {
   }
 
   @Get()
-  @JwtAuth(Role.ADMIN)
+  //@JwtAuth(Role.USER)
   async findAll() {
     return this.propositionService.findAll();
   }

@@ -13,24 +13,6 @@ export class PropPictureService {
   ) {}
 
   public async createPictures(proposition: Proposition, filenames: string[]) {
-    // check if art exists
-
-    // const countPictures = await this.pictureRepository.count({
-    //   where: {
-    //     art: art,
-    //   },
-    // });
-
-    // check the pictures number of the art
-    // if (3 - countPictures < filenames.length) {
-    //   // remove pictures from the file system
-    //   this.removePicturesFromFileSystem(filenames);
-    //   throw new HttpException(
-    //     'Art with id ' + artId + ' has already ' + countPictures + ' pictures',
-    //     HttpStatus.NOT_ACCEPTABLE,
-    //   );
-    // }
-
     const pictures: PropPicture[] = [];
     filenames.forEach(async (item, index) => {
       const picture: PropPicture = {

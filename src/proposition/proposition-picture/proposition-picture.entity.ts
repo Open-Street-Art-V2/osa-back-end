@@ -1,3 +1,4 @@
+import { contrubArt } from 'src/contribution/contrub.entity';
 import {
   Column,
   CreateDateColumn,
@@ -15,7 +16,7 @@ export class PropPicture {
   @Column()
   url: string;
 
-  @ManyToOne(() => Proposition, (proposition) => proposition.pictures, {
+  @ManyToOne(() => contrubArt, (proposition) => proposition.pictures, {
     primary: true,
     nullable: false,
     onDelete: 'CASCADE',
