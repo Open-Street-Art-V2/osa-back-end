@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Post,
   Req,
   UploadedFiles,
   UseFilters,
@@ -57,7 +58,7 @@ export class ContrubController {
     return this.contributionService.findAll();
   }
 
-  @Get(':id')
+  @Post(':id')
   @JwtAuth(Role.USER)
   validate(@Param('id') id: string) {
     return this.contributionService.validateContribution(+id);
