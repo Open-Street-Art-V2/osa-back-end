@@ -12,7 +12,6 @@ import { Picture } from 'src/art/picture/picture.entity';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
 import { Repository } from 'typeorm';
-//import { contrubArt } from '../contribution/contrub.entity';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
 import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { Proposition } from './entities/proposition.entity';
@@ -55,32 +54,6 @@ export class PropositionService {
       throw err;
     }
   }
-
-  /*async contribution(
-    contribDto: CreatePropositionDto,
-    userId: number,
-    artId: number,
-    filenames?: string[],
-  ): Promise<any> {
-    const user: User = await this.userRepository.findOne({
-      where: {
-        id: userId,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    const contribution: contrubArt = {
-      id: artId,
-      ...contribDto,
-      user: user,
-    };
-
-    const contib = await this.propRepository.save(contribution);
-
-    if (filenames) {
-      await this.propPicService.createPictures(contib, filenames);
-    }
-    return contib;
-  }*/
 
   async findAll() {
     return await this.propRepository.find();
@@ -245,34 +218,5 @@ export class PropositionService {
     }
     console.log(result);
     return result;
-  }
-
-  async validateContribution(idCont: number) {
-    const contribution = await this.propRepository.findOne(idCont);
-    const {
-      id,
-      title,
-      address,
-      artist,
-      city,
-      description,
-      latitude,
-      longitude,
-    } = {
-      ...contribution,
-    };
-
-    const editArt: Art = new Art();
-    editArt.id=id;
-    editArt.title = title;
-    editArt.address = address;
-    editArt.artist = artist;
-    editArt.city = city;
-    editArt.description = description;
-    editArt.latitude = latitude;
-    editArt.latitude = longitude;
-
-    await this.artRepository.save(editArt);
-    await this.propRepository.delete(idCont);
   }
 }
