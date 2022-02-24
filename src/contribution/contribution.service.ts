@@ -4,12 +4,12 @@ import { Art } from 'src/art/art.entity';
 import { ArtRepository } from 'src/art/art.repository';
 import { Picture } from 'src/art/picture/picture.entity';
 import { PictureService } from 'src/art/picture/picture.service';
-import { PropPictureService } from 'src/proposition/proposition-picture/proposition-picture.service';
 //import { Picture } from 'src/art/picture/picture.entity';
 //import { PropPictureService } from 'src/proposition/proposition-picture/proposition-picture.service';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
 import { Repository } from 'typeorm';
+import { ContribPictureService } from './contrib-picture/contrib-picture.service';
 import { contrubArt } from './contrub.entity';
 import { ContributionDto } from './dto/contribution.dto';
 
@@ -21,7 +21,8 @@ export class ContributionService {
     @InjectRepository(UsersRepository) private userRepository: UsersRepository,
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
     @Inject(PictureService) private pictureService: PictureService,
-    @Inject(PropPictureService) private propPicService: PropPictureService,
+    @Inject(ContribPictureService)
+    private contribPictureService: ContribPictureService,
   ) {}
 
   async findAll() {
@@ -49,7 +50,7 @@ export class ContributionService {
     const contib = await this.contribRepository.save(contribution);
 
     if (filenames) {
-      await this.propPicService.createPictures(contib, filenames);
+      await this.contribPictureService.createPictures(contib, filenames);
     }
     return contib;
   }

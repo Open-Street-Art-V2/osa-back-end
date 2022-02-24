@@ -1,4 +1,3 @@
-import { PropPicture } from 'src/proposition/proposition-picture/proposition-picture.entity';
 import { User } from 'src/users/user.entity';
 import {
   Column,
@@ -8,6 +7,7 @@ import {
   PrimaryColumn,
   Unique,
 } from 'typeorm';
+import { ContribPicture } from './contrib-picture/contrib-picture.entity';
 
 @Entity()
 @Unique(['title'])
@@ -37,14 +37,13 @@ export class contrubArt {
   public city: string;
   @ManyToOne(() => User, (user) => user.propositions, {
     nullable: true,
-    eager: true,
   })
   user: User;
 
-  @OneToMany(() => PropPicture, (picture) => picture.proposition, {
+  @OneToMany(() => ContribPicture, (picture) => picture.contribution, {
     eager: true,
   })
-  pictures?: PropPicture[];
+  pictures?: ContribPicture[];
 
   @Column()
   index: number;
