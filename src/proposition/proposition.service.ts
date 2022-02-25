@@ -5,6 +5,11 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import {
+  paginate,
+  IPaginationOptions,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Art } from 'src/art/art.entity';
 import { ArtRepository } from 'src/art/art.repository';
@@ -59,6 +64,15 @@ export class PropositionService {
     return await this.propRepository.find();
   }
 
+  async paginate(
+    options: IPaginationOptions,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    return paginate<Proposition>(this.propRepository, options, { art: null });
+  }
+
   async findOne(id: number) {
     try {
       const prop: Proposition = await this.propRepository.findOne(id);
@@ -68,6 +82,36 @@ export class PropositionService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async findUserProposition(id: number, userId: number) {
+    try {
+      const prop: Proposition = await this.propRepository.findOne(id, {
+        where: {
+          user: userId,
+        },
+      });
+      if (!prop)
+        throw new NotFoundException(`Proposition with id:${id} was not found`);
+      return prop;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async findUserPropositions(
+    options: IPaginationOptions,
+    userId: number,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    return paginate<Proposition>(this.propRepository, options, {
+      where: {
+        art: null,
+        user: userId,
+      },
+    });
   }
 
   async update(

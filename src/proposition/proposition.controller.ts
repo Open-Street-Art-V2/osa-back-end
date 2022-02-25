@@ -15,6 +15,7 @@ import {
   UseInterceptors,
   HttpException,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody } from '@nestjs/swagger';
@@ -23,6 +24,7 @@ import { Role } from 'src/auth/roles/role.enum';
 import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { ValidatePropDto } from './dto/validate-proposition.dto';
 import { PropositionService } from './proposition.service';
@@ -62,17 +64,58 @@ export class PropositionController {
 
   @Get()
   @JwtAuth(Role.ADMIN)
-  async findAll() {
-    return this.propositionService.findAll();
+  async paginate(@Query() paginationDto: PaginationDto) {
+    if (Object.keys(paginationDto).length === 2) {
+      return this.propositionService.paginate({
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return this.propositionService.paginate({
+        limit: 10,
+        page: 1,
+      });
+    }
   }
 
   @Get(':id')
-  @JwtAuth(Role.USER)
+  @JwtAuth(Role.ADMIN)
   findOne(@Param('id') id: string) {
     return this.propositionService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Get('/mine/all')
+  @JwtAuth(Role.USER)
+  async findUserPropositions(
+    @Query() paginationDto: PaginationDto,
+    @Req() req,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return this.propositionService.findUserPropositions(
+        {
+          limit: paginationDto.limit,
+          page: paginationDto.page,
+        },
+        req.user.id,
+      );
+    } else {
+      return this.propositionService.findUserPropositions(
+        {
+          limit: 10,
+          page: 1,
+        },
+        req.user.id,
+      );
+    }
+  }
+
+  @Get('user/:id')
+  @JwtAuth(Role.USER)
+  findUserProposition(@Param('id') id: string, @Req() req) {
+    return this.propositionService.findUserProposition(+id, req.user.id);
+  }
+
+  @Patch('user/:id')
   @JwtAuth(Role.USER)
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
