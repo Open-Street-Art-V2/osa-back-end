@@ -80,7 +80,7 @@ export class PropositionController {
 
   @Get(':id')
   @JwtAuth(Role.ADMIN)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.propositionService.findOne(+id);
   }
 
@@ -111,7 +111,7 @@ export class PropositionController {
 
   @Get('user/:id')
   @JwtAuth(Role.USER)
-  findUserProposition(@Param('id') id: string, @Req() req) {
+  findUserProposition(@Param('id', ParseIntPipe) id: number, @Req() req) {
     return this.propositionService.findUserProposition(+id, req.user.id);
   }
 
@@ -158,6 +158,15 @@ export class PropositionController {
   @JwtAuth(Role.ADMIN, Role.USER)
   async remove(@Param('id') id: string, @Req() request: any) {
     return await this.propositionService.remove(+id, request.user);
+  }
+
+  @Delete()
+  @JwtAuth(Role.ADMIN, Role.USER)
+  async removeBatch(@Body() validatePropDto: ValidatePropDto, @Req() request) {
+    return await this.propositionService.removeBatch(
+      validatePropDto.propositions,
+      request.user.id,
+    );
   }
 
   @Post('validate')

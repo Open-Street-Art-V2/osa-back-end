@@ -70,7 +70,10 @@ export class PropositionService {
     options.limit =
       options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
     options.page = options.page <= 0 ? 1 : options.page;
-    return paginate<Proposition>(this.propRepository, options, { art: null });
+    const result = await paginate<Proposition>(this.propRepository, options, {
+      art: null,
+    });
+    return result;
   }
 
   async findOne(id: number) {
@@ -232,8 +235,31 @@ export class PropositionService {
     }
   }
 
+  async removeBatch(props: number[], userId: number) {
+    let result = { validated: [], notFound: [], notAuthorized: [] };
+    try {
+      await Promise.all(
+        props.map(async (id) => {
+          const prop = await this.propRepository.findOne(id);
+          if (!prop) {
+            result.notFound.push(id);
+          } else if (prop.user.id === userId) {
+            this.propRepository.remove(prop)
+            result.validated.push(id);
+          } else {
+            result.notAuthorized.push(id);
+          }
+        }),
+      );
+    } catch (err) {
+      throw err;
+    }
+    return result;
+  }
+
   async validate(props: number[]) {
     let result = { validated: [], notFound: [] };
+    console.log("hahaha");
     try {
       await Promise.all(
         props.map(async (item) => {
@@ -260,7 +286,6 @@ export class PropositionService {
     } catch (err) {
       throw err;
     }
-    console.log(result);
     return result;
   }
 }
