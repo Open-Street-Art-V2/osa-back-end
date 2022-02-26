@@ -18,7 +18,7 @@ import { Picture } from 'src/art/picture/picture.entity';
 import { PictureService } from 'src/art/picture/picture.service';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
 import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { Proposition } from './entities/proposition.entity';
@@ -108,7 +108,19 @@ export class PropositionService {
       options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
     options.page = options.page <= 0 ? 1 : options.page;
     const result = await paginate<Proposition>(this.propRepository, options, {
-      art: null,
+      where: { art: IsNull() },
+    });
+    return result;
+  }
+
+  async paginateContribution(
+    options: IPaginationOptions,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    const result = await paginate<Proposition>(this.propRepository, options, {
+      where: { art: Not(IsNull()) },
     });
     return result;
   }
@@ -281,7 +293,7 @@ export class PropositionService {
           if (!prop) {
             result.notFound.push(id);
           } else if (prop.user.id === userId) {
-            this.propRepository.remove(prop)
+            this.propRepository.remove(prop);
             result.validated.push(id);
           } else {
             result.notAuthorized.push(id);
@@ -296,7 +308,7 @@ export class PropositionService {
 
   async validate(props: number[]) {
     let result = { validated: [], notFound: [] };
-    console.log("hahaha");
+    console.log('hahaha');
     try {
       await Promise.all(
         props.map(async (item) => {

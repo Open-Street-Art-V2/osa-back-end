@@ -63,7 +63,7 @@ export class PropositionController {
   }
 
   @Get()
-  @JwtAuth(Role.ADMIN)
+  //@JwtAuth(Role.ADMIN)
   async paginate(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
       return this.propositionService.paginate({
@@ -174,6 +174,24 @@ export class PropositionController {
   async validate(@Body() validatePropDto: ValidatePropDto) {
     return this.propositionService.validate(validatePropDto.propositions);
   }
+  
+  /********************** Contribution *********************************** */
+
+  @Get()
+  @JwtAuth(Role.ADMIN)
+  async getContribution(@Query() paginationDto: PaginationDto) {
+    if (Object.keys(paginationDto).length === 2) {
+      return this.propositionService.paginateContribution({
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return this.propositionService.paginateContribution({
+        limit: 10,
+        page: 1,
+      });
+    }
+  }
 
   @HttpCode(HttpStatus.CREATED)
   @Post(':id')
@@ -209,7 +227,7 @@ export class PropositionController {
   }
 
   @Post('contrub/:id')
-  //@JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.ADMIN)
   async validateContribution(@Param('id') id: number) {
     return this.propositionService.validateContribution(id);
   }
