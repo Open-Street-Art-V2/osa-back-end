@@ -1,22 +1,24 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Art } from '../art.entity';
-import { Picture } from './picture.entity';
+import * as fs from 'fs';
+import { ContribPicture } from './contrib-picture.entity';
+import { contrubArt } from '../contrub.entity';
 
 @Injectable()
-export class PictureService {
+export class ContribPictureService {
   constructor(
-    @InjectRepository(Picture) private pictureRepository: Repository<Picture>,
+    @InjectRepository(ContribPicture)
+    private pictureRepository: Repository<ContribPicture>,
   ) {}
 
-  public async createPictures(art: Art, filenames: string[]) {
-    const pictures: Picture[] = [];
+  public async createPictures(proposition: contrubArt, filenames: string[]) {
+    const pictures: ContribPicture[] = [];
     filenames.forEach(async (item, index) => {
-      const picture: Picture = {
+      const picture: ContribPicture = {
         position: index + 1,
         url: item,
-        art: art,
+        contribution: proposition,
       };
       const res = await this.pictureRepository.save(picture);
       pictures.push(res);
@@ -25,13 +27,17 @@ export class PictureService {
     return pictures;
   }
 
-  public async editPictures(filenames: string[], tabIndex: number[], art: Art) {
-    const pictures: Picture[] = [];
+  public async editPictures(
+    filenames: string[],
+    tabIndex: number[],
+    proposition: contrubArt,
+  ) {
+    const pictures: ContribPicture[] = [];
     filenames.forEach(async (item, index) => {
-      const picture: Picture = {
+      const picture: ContribPicture = {
         position: tabIndex[index],
         url: item,
-        art: art,
+        contribution: proposition,
       };
       const res = await this.pictureRepository.save(picture);
       pictures.push(res);
@@ -42,12 +48,12 @@ export class PictureService {
   public removePicturesFromFileSystem(filenames: string[]) {
     // remove pictures from the file system
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fs = require('fs');
     try {
       filenames.map((filename) => {
         const path = `${process.env.IMAGE_DEST}/${filename}`;
         fs.unlink(path, (err) => {
-          if (err) throw err;
+          //TODO: Handle error????
+          if (err) console.log('image cannot be deleted');
           else console.log(`Deleted image : ${filename}`);
         });
       });

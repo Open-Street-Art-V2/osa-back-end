@@ -1,19 +1,19 @@
-import { Art } from 'src/art/art.entity';
 import { User } from 'src/users/user.entity';
-import { PropPicture } from '../proposition-picture/proposition-picture.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
+  Unique,
 } from 'typeorm';
+import { ContribPicture } from './contrib-picture/contrib-picture.entity';
 
 @Entity()
-export class Proposition {
-  @PrimaryGeneratedColumn()
-  public id?: number;
+@Unique(['title'])
+export class contrubArt {
+  @PrimaryColumn()
+  public id: number;
 
   @Column()
   public title: string;
@@ -35,26 +35,18 @@ export class Proposition {
 
   @Column()
   public city: string;
-
-  @OneToMany(() => PropPicture, (picture) => picture.proposition, {
-    eager: true,
-  })
-  pictures?: PropPicture[];
-
   @ManyToOne(() => User, (user) => user.propositions, {
     nullable: true,
-    eager: true,
   })
   user: User;
 
-  @ManyToOne(() => Art, (art) => art.id, {
+  @OneToMany(() => ContribPicture, (picture) => picture.contribution, {
     eager: true,
   })
-  art?: Art;
+  pictures?: ContribPicture[];
 
-  @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-  })
+  @Column()
+  index: number;
+
   public created_at?: Date;
 }

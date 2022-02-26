@@ -5,13 +5,20 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import {
+  paginate,
+  IPaginationOptions,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
 import { InjectRepository } from '@nestjs/typeorm';
+//import { cp } from 'fs';
 import { Art } from 'src/art/art.entity';
 import { ArtRepository } from 'src/art/art.repository';
 import { Picture } from 'src/art/picture/picture.entity';
+import { PictureService } from 'src/art/picture/picture.service';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
 import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { Proposition } from './entities/proposition.entity';
@@ -27,6 +34,7 @@ export class PropositionService {
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
     @InjectRepository(Picture) private picRepository: Repository<Picture>,
     @Inject(PropPictureService) private propPicService: PropPictureService,
+    @Inject(PictureService) private pictureService: PictureService,
   ) {}
   async create(
     createPropositionDto: CreatePropositionDto,
@@ -54,9 +62,67 @@ export class PropositionService {
       throw err;
     }
   }
+  async contribution(
+    createPropositionDto: CreatePropositionDto,
+    userId: number,
+    artId: number,
+    filenames?,
+  ): Promise<any> {
+    try {
+      const user: User = await this.userRepository.findOne({
+        where: {
+          id: userId,
+        },
+      });
+      if (!user) throw new NotFoundException('User not found');
+      const updatedArt: Art = await this.artRepository.findOne(artId);
+
+      const { ...contribution } = {
+        ...createPropositionDto,
+        art: updatedArt,
+        user: user,
+      };
+      const proposition = await this.propRepository.save(contribution);
+
+      if (filenames) {
+        await this.propPicService.contributionPictures(
+          proposition,
+          filenames,
+          createPropositionDto.index,
+        );
+      }
+      return proposition;
+    } catch (err) {
+      throw err;
+    }
+  }
 
   async findAll() {
     return await this.propRepository.find();
+  }
+
+  async paginate(
+    options: IPaginationOptions,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    const result = await paginate<Proposition>(this.propRepository, options, {
+      where: { art: IsNull() },
+    });
+    return result;
+  }
+
+  async paginateContribution(
+    options: IPaginationOptions,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    const result = await paginate<Proposition>(this.propRepository, options, {
+      where: { art: Not(IsNull()) },
+    });
+    return result;
   }
 
   async findOne(id: number) {
@@ -68,6 +134,36 @@ export class PropositionService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async findUserProposition(id: number, userId: number) {
+    try {
+      const prop: Proposition = await this.propRepository.findOne(id, {
+        where: {
+          user: userId,
+        },
+      });
+      if (!prop)
+        throw new NotFoundException(`Proposition with id:${id} was not found`);
+      return prop;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async findUserPropositions(
+    options: IPaginationOptions,
+    userId: number,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    return paginate<Proposition>(this.propRepository, options, {
+      where: {
+        art: null,
+        user: userId,
+      },
+    });
   }
 
   async update(
@@ -188,12 +284,35 @@ export class PropositionService {
     }
   }
 
+  async removeBatch(props: number[], userId: number) {
+    let result = { validated: [], notFound: [], notAuthorized: [] };
+    try {
+      await Promise.all(
+        props.map(async (id) => {
+          const prop = await this.propRepository.findOne(id);
+          if (!prop) {
+            result.notFound.push(id);
+          } else if (prop.user.id === userId) {
+            this.propRepository.remove(prop);
+            result.validated.push(id);
+          } else {
+            result.notAuthorized.push(id);
+          }
+        }),
+      );
+    } catch (err) {
+      throw err;
+    }
+    return result;
+  }
+
   async validate(props: number[]) {
     let result = { validated: [], notFound: [] };
+    console.log('hahaha');
     try {
       await Promise.all(
         props.map(async (item) => {
-          const prop = await this.propRepository.findOne(item);
+          const prop = await this.propRepository.findOne(item,{where:{art:IsNull()}});
           if (prop) {
             const { id, art, ...newArt }: { id?: number; art?: Art } & Art =
               prop;
@@ -216,7 +335,118 @@ export class PropositionService {
     } catch (err) {
       throw err;
     }
-    console.log(result);
+    return result;
+  }
+
+  async validateContribution(id: number) {
+    let result;
+    const prop = await this.propRepository.findOne(id);
+    if (prop) {
+      const { id, art, ...contribArt }: { id?: number; art?: Art } & Art = prop;
+      console.log(prop);
+      if (art.id) {
+        let updatedArt: Art = new Art();
+        // updatedArt={...contribArt}
+        updatedArt.id = art.id;
+        updatedArt.title = contribArt.title;
+        updatedArt.description = contribArt.description;
+        updatedArt.artist = contribArt.artist;
+        updatedArt.address = contribArt.address;
+        updatedArt.city = contribArt.city;
+        updatedArt.latitude = contribArt.latitude;
+        updatedArt.longitude = contribArt.latitude;
+
+        result = await this.artRepository.save(updatedArt);
+
+        await this.propRepository.delete(id);
+
+        let tabIndex: number[] = [];
+        contribArt.pictures.forEach((elt, indice) => {
+          tabIndex[indice] = Number(elt.position);
+        });
+
+        const filenames: string[] = contribArt.pictures.map((elt) => elt.url);
+        if (filenames) {
+          const pictures: Picture[] = art.pictures.filter((elt) => {
+            //tabIndex.findIndex(elt.position)!=-1
+            return (
+              elt.position == tabIndex[0] ||
+              elt.position == tabIndex[1] ||
+              elt.position == tabIndex[2]
+            );
+          }); //art.pictures.map((elt) => elt.url);
+          const images: string[] = pictures.map((img) => img.url);
+
+          this.pictureService.editPictures(filenames, tabIndex, art);
+          this.pictureService.removePicturesFromFileSystem(images);
+          /*switch (index) {
+            case 1: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 1,
+              );
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 2: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 2,
+              );
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [2], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 3: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 3,
+              );
+
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 4: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 1 || elt.position == 2,
+              );
+
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1, 2], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 5: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 1 || elt.position == 3,
+              );
+
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1, 3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 6: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 3 || elt.position == 2,
+              );
+
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [2, 3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 7: {
+              const images: string[] = art.pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1, 2, 3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+            }
+          }*/
+        }
+      }
+    }
     return result;
   }
 }
