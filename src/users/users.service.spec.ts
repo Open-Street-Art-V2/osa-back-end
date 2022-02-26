@@ -84,8 +84,7 @@ describe('UsersService', () => {
       repository.delete.mockResolvedValue(deleteResult);
       expect(repository.delete).not.toHaveBeenCalled();
 
-      // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-      const id: number = 5;
+      const id = 5;
       const result = await service.deleteUser(id);
       expect(repository.delete).toHaveBeenLastCalledWith({ id: id });
       expect(result).toEqual({ raw: [], affected: 1 });
@@ -126,8 +125,7 @@ describe('UsersService', () => {
       repository.update.mockResolvedValue(updateResult);
       expect(repository.update).not.toHaveBeenCalled();
 
-      // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-      const id: number = 5;
+      const id = 5;
       const updateUserProfileDTO: UpdateUserProfileDTO = {
         name: 'Notme',
         firstname: 'Notme',

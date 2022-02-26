@@ -15,7 +15,6 @@ import {
   UseInterceptors,
   HttpException,
   ParseIntPipe,
-  Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody } from '@nestjs/swagger';
@@ -24,7 +23,6 @@ import { Role } from 'src/auth/roles/role.enum';
 import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { CreatePropositionDto } from './dto/create-proposition.dto';
-import { PaginationDto } from './dto/pagination.dto';
 import { UpdatePropositionDto } from './dto/update-proposition.dto';
 import { ValidatePropDto } from './dto/validate-proposition.dto';
 import { PropositionService } from './proposition.service';
@@ -32,8 +30,6 @@ import { PropositionService } from './proposition.service';
 @Controller('proposition')
 export class PropositionController {
   constructor(private readonly propositionService: PropositionService) {}
-
-  //Create proposition
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
@@ -64,63 +60,19 @@ export class PropositionController {
     };
   }
 
-  // Get all propostion
   @Get()
   @JwtAuth(Role.ADMIN)
-  async paginate(@Query() paginationDto: PaginationDto) {
-    if (Object.keys(paginationDto).length === 2) {
-      return this.propositionService.paginate({
-        limit: paginationDto.limit,
-        page: paginationDto.page,
-      });
-    } else {
-      return this.propositionService.paginate({
-        limit: 10,
-        page: 1,
-      });
-    }
+  async findAll() {
+    return this.propositionService.findAll();
   }
 
-  // Get one proposition
   @Get(':id')
-  @JwtAuth(Role.ADMIN)
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  @JwtAuth(Role.USER)
+  findOne(@Param('id') id: string) {
     return this.propositionService.findOne(+id);
   }
 
-  @Get('/mine/all')
-  @JwtAuth(Role.USER)
-  async findUserPropositions(
-    @Query() paginationDto: PaginationDto,
-    @Req() req,
-  ) {
-    if (Object.keys(paginationDto).length === 2) {
-      return this.propositionService.findUserPropositions(
-        {
-          limit: paginationDto.limit,
-          page: paginationDto.page,
-        },
-        req.user.id,
-      );
-    } else {
-      return this.propositionService.findUserPropositions(
-        {
-          limit: 10,
-          page: 1,
-        },
-        req.user.id,
-      );
-    }
-  }
-
-  @Get('user/:id')
-  @JwtAuth(Role.USER)
-  findUserProposition(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    return this.propositionService.findUserProposition(+id, req.user.id);
-  }
-
-  // update proposition
-  @Patch('user/:id')
+  @Patch(':id')
   @JwtAuth(Role.USER)
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
@@ -165,81 +117,9 @@ export class PropositionController {
     return await this.propositionService.remove(+id, request.user);
   }
 
-  @Delete()
-  @JwtAuth(Role.ADMIN, Role.USER)
-  async removeBatch(@Body() validatePropDto: ValidatePropDto, @Req() request) {
-    return await this.propositionService.removeBatch(
-      validatePropDto.propositions,
-      request.user.id,
-    );
-  }
-
-  // Validate multile proposition
-
   @Post('validate')
   @JwtAuth(Role.ADMIN)
   async validate(@Body() validatePropDto: ValidatePropDto) {
     return this.propositionService.validate(validatePropDto.propositions);
-  }
-
-  /********************** Contribution (I will create new controller later) *********************************** */
-
-  // Get All contribution
-
-  @Get('get/contribution')
-  @JwtAuth(Role.ADMIN)
-  async getContribution(@Query() paginationDto: PaginationDto) {
-    if (Object.keys(paginationDto).length === 2) {
-      return this.propositionService.paginateContribution({
-        limit: paginationDto.limit,
-        page: paginationDto.page,
-      });
-    } else {
-      return this.propositionService.paginateContribution({
-        limit: 10,
-        page: 1,
-      });
-    }
-  }
-
-  // Add contribution
-
-  @HttpCode(HttpStatus.CREATED)
-  @Post(':id')
-  @UseFilters(CreateArtBadRequestFilter)
-  @UseInterceptors(FilesInterceptor('files', 3))
-  @JwtAuth(Role.USER)
-  async contribution(
-    @Param('id') id: number,
-    @UploadedFiles() files: Array<Express.Multer.File>,
-    @Body() createPropositionDto: CreatePropositionDto,
-    @Req() request: any /*@Body() createPropositionDto: CreatePropositionDto*/,
-  ) {
-    if (files && files.length >= 1) {
-      const filenames = files.map((f) => f.filename);
-      exceptionUploadFiles(filenames, createPropositionDto.index);
-      await this.propositionService.contribution(
-        createPropositionDto,
-        request.user.id,
-        id,
-        filenames,
-      );
-    } else {
-      await this.propositionService.contribution(
-        createPropositionDto,
-        request.user.id,
-        id,
-      );
-    }
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Art suggestion successfully created!',
-    };
-  }
-  // Validate contribution
-  @Post('contribution/:id')
-  @JwtAuth(Role.ADMIN)
-  async validateContribution(@Param('id') id: number) {
-    return this.propositionService.validateContribution(id);
   }
 }
