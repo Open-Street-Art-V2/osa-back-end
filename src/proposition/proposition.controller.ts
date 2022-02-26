@@ -122,4 +122,42 @@ export class PropositionController {
   async validate(@Body() validatePropDto: ValidatePropDto) {
     return this.propositionService.validate(validatePropDto.propositions);
   }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post(':id')
+  @UseFilters(CreateArtBadRequestFilter)
+  @UseInterceptors(FilesInterceptor('files', 3))
+  @JwtAuth(Role.USER)
+  async contribution(
+    @Param('id') id: number,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Body() createPropositionDto: CreatePropositionDto,
+    @Req() request: any /*@Body() createPropositionDto: CreatePropositionDto*/,
+  ) {
+    if (files && files.length >= 1) {
+      const filenames = files.map((f) => f.filename);
+      await this.propositionService.contribution(
+        createPropositionDto,
+        request.user.id,
+        id,
+        filenames,
+      );
+    } else {
+      await this.propositionService.contribution(
+        createPropositionDto,
+        request.user.id,
+        id,
+      );
+    }
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Art suggestion successfully created!',
+    };
+  }
+
+  @Post('contrub/:id')
+  //@JwtAuth(Role.ADMIN)
+  async validateContribution(@Param('id') id: number) {
+    return this.propositionService.validateContribution(id);
+  }
 }

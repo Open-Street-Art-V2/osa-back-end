@@ -10,6 +10,8 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { IsInt, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 @Entity()
 @Unique(['title'])
@@ -59,4 +61,11 @@ export class Proposition {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public created_at?: Date;
+
+  @Column({ default: 0 })
+  @IsInt()
+  @Type(() => Number)
+  @Min(0)
+  @Max(7)
+  index: number;
 }

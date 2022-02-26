@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Art } from 'src/art/art.entity';
 import { ArtRepository } from 'src/art/art.repository';
 import { Picture } from 'src/art/picture/picture.entity';
+import { PictureService } from 'src/art/picture/picture.service';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
 import { Repository } from 'typeorm';
@@ -27,6 +28,8 @@ export class PropositionService {
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
     @InjectRepository(Picture) private picRepository: Repository<Picture>,
     @Inject(PropPictureService) private propPicService: PropPictureService,
+    @Inject(PictureService) private pictureService: PictureService,
+
   ) {}
   async create(
     createPropositionDto: CreatePropositionDto,
@@ -45,6 +48,35 @@ export class PropositionService {
         user: user,
       };
       const proposition = await this.propRepository.save(prop);
+      if (filenames) {
+        console.log(filenames);
+        await this.propPicService.createPictures(proposition, filenames);
+      }
+      return proposition;
+    } catch (err) {
+      throw err;
+    }
+  }
+  async contribution(
+    createPropositionDto: CreatePropositionDto,
+    userId: number,
+    artId: number,
+    filenames?,
+  ): Promise<any> {
+    try {
+      const user: User = await this.userRepository.findOne({
+        where: {
+          id: userId,
+        },
+      });
+      if (!user) throw new NotFoundException('User not found');
+      const updatedArt: Art = await this.artRepository.findOne(artId);
+      const { ...contribution } = {
+        ...createPropositionDto,
+        art: updatedArt,
+        user: user,
+      };
+      const proposition = await this.propRepository.save(contribution);
       if (filenames) {
         console.log(filenames);
         await this.propPicService.createPictures(proposition, filenames);
@@ -194,6 +226,7 @@ export class PropositionService {
       await Promise.all(
         props.map(async (item) => {
           const prop = await this.propRepository.findOne(item);
+          //art : real art id
           if (prop) {
             const { id, art, ...newArt }: { id?: number; art?: Art } & Art =
               prop;
@@ -217,6 +250,105 @@ export class PropositionService {
       throw err;
     }
     console.log(result);
+    return result;
+  }
+
+  async validateContribution(id: number) {
+    let result;
+    const prop = await this.propRepository.findOne(id);
+    if (prop) {
+      const {
+        id,
+        art,
+        index,
+        ...contribArt
+      }: { id?: number; art?: Art; index:number } & Art = prop;
+      if (art.id) {
+        let updatedArt: Art = new Art();
+        updatedArt.id = art.id;
+        updatedArt.title=contribArt.title;
+        updatedArt.description=contribArt.description;
+        updatedArt.artist=contribArt.artist;
+        updatedArt.address=contribArt.address;
+        updatedArt.city=contribArt.city;
+        updatedArt.latitude=contribArt.latitude;
+        updatedArt.longitude=contribArt.latitude;
+        console.log(updatedArt.id)
+        result = await this.artRepository.save(updatedArt);
+        console.log("ok")
+
+        await this.propRepository.delete(id);
+
+        const filenames: string[] = contribArt.pictures.map((elt) => elt.url);
+        if (filenames) {
+          switch(index){
+            case 1: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 1,
+              );
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 2: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 2,
+              );
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [2], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 3: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 3,
+              );
+    
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 4: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 1 || elt.position == 2,
+              );
+    
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1, 2], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 5: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 1 || elt.position == 3,
+              );
+    
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1, 3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 6: {
+              const pictures: Picture[] = art.pictures.filter(
+                (elt) => elt.position == 3 || elt.position == 2,
+              );
+    
+              const images: string[] = pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [2, 3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+              break;
+            }
+            case 7: {
+              const images: string[] = art.pictures.map((elt) => elt.url);
+              this.pictureService.editPictures(filenames, [1, 2, 3], art);
+              this.pictureService.removePicturesFromFileSystem(images);
+            }
+          }
+        }
+      }
+    }
     return result;
   }
 }

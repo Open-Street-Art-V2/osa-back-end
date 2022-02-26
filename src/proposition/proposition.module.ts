@@ -13,6 +13,7 @@ import { diskStorage } from 'multer';
 import fileName from 'src/utils/file_upload/filename';
 import { imageFilter } from 'src/utils/file_upload/filter';
 import { Picture } from 'src/art/picture/picture.entity';
+import { PictureService } from 'src/art/picture/picture.service';
 
 @Module({
   imports: [
@@ -39,6 +40,6 @@ import { Picture } from 'src/art/picture/picture.entity';
     }),
   ],
   controllers: [PropositionController],
-  providers: [PropositionService, PropPictureService],
+  providers: [PropositionService, PropPictureService, PictureService],
 })
 export class PropositionModule {}
