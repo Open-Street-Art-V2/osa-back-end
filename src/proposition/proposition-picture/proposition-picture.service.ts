@@ -12,6 +12,99 @@ export class PropPictureService {
     private pictureRepository: Repository<PropPicture>,
   ) {}
 
+  public async contributionPictures(
+    proposition: Proposition,
+    filenames: string[],
+    index: number,
+  ) {
+    const pictures: PropPicture[] = [];
+
+    switch (index) {
+      case 1: {
+        const picture: PropPicture = {
+          position: 1,
+          url: filenames[0],
+          proposition: proposition,
+        };
+        const res = await this.pictureRepository.save(picture);
+        pictures.push(res);
+        break;
+      }
+      case 2: {
+        const picture: PropPicture = {
+          position: 2,
+          url: filenames[0],
+          proposition: proposition,
+        };
+        const res = await this.pictureRepository.save(picture);
+        pictures.push(res);
+        break;
+      }
+      case 3: {
+        const picture: PropPicture = {
+          position: 3,
+          url: filenames[0],
+          proposition: proposition,
+        };
+        const res = await this.pictureRepository.save(picture);
+        pictures.push(res);
+        break;
+      }
+      case 4: {
+        filenames.forEach(async (item, position) => {
+          const picture: PropPicture = {
+            position: position + 1,
+            url: item,
+            proposition: proposition,
+          };
+          const res = await this.pictureRepository.save(picture);
+          pictures.push(res);
+        });
+        break;
+      }
+      case 5: {
+        filenames.forEach(async (item, pos) => {
+          if (pos == 1) pos = 2;
+          const picture: PropPicture = {
+            position: pos + 1,
+            url: item,
+            proposition: proposition,
+          };
+          const res = await this.pictureRepository.save(picture);
+          pictures.push(res);
+        });
+        break;
+      }
+      case 6: {
+        filenames.forEach(async (item, position) => {
+          position++;
+          const picture: PropPicture = {
+            position: position + 1,
+            url: item,
+            proposition: proposition,
+          };
+          const res = await this.pictureRepository.save(picture);
+          pictures.push(res);
+        });
+        break;
+      }
+      case 7: {
+        filenames.forEach(async (item, position) => {
+          const picture: PropPicture = {
+            position: position + 1,
+            url: item,
+            proposition: proposition,
+          };
+          const res = await this.pictureRepository.save(picture);
+          pictures.push(res);
+        });
+        break;
+      }
+    }
+
+    return pictures;
+  }
+
   public async createPictures(proposition: Proposition, filenames: string[]) {
     const pictures: PropPicture[] = [];
     filenames.forEach(async (item, index) => {

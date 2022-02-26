@@ -136,6 +136,7 @@ export class PropositionController {
   ) {
     if (files && files.length >= 1) {
       const filenames = files.map((f) => f.filename);
+      exceptionUploadFiles(filenames, createPropositionDto.index);
       await this.propositionService.contribution(
         createPropositionDto,
         request.user.id,

@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+//import { cp } from 'fs';
 import { Art } from 'src/art/art.entity';
 import { ArtRepository } from 'src/art/art.repository';
 import { Picture } from 'src/art/picture/picture.entity';
@@ -29,7 +30,6 @@ export class PropositionService {
     @InjectRepository(Picture) private picRepository: Repository<Picture>,
     @Inject(PropPictureService) private propPicService: PropPictureService,
     @Inject(PictureService) private pictureService: PictureService,
-
   ) {}
   async create(
     createPropositionDto: CreatePropositionDto,
@@ -71,15 +71,20 @@ export class PropositionService {
       });
       if (!user) throw new NotFoundException('User not found');
       const updatedArt: Art = await this.artRepository.findOne(artId);
+
       const { ...contribution } = {
         ...createPropositionDto,
         art: updatedArt,
         user: user,
       };
       const proposition = await this.propRepository.save(contribution);
+
       if (filenames) {
-        console.log(filenames);
-        await this.propPicService.createPictures(proposition, filenames);
+        await this.propPicService.contributionPictures(
+          proposition,
+          filenames,
+          createPropositionDto.index,
+        );
       }
       return proposition;
     } catch (err) {
@@ -257,31 +262,44 @@ export class PropositionService {
     let result;
     const prop = await this.propRepository.findOne(id);
     if (prop) {
-      const {
-        id,
-        art,
-        index,
-        ...contribArt
-      }: { id?: number; art?: Art; index:number } & Art = prop;
+      const { id, art, ...contribArt }: { id?: number; art?: Art } & Art = prop;
+      console.log(prop);
       if (art.id) {
         let updatedArt: Art = new Art();
+        // updatedArt={...contribArt}
         updatedArt.id = art.id;
-        updatedArt.title=contribArt.title;
-        updatedArt.description=contribArt.description;
-        updatedArt.artist=contribArt.artist;
-        updatedArt.address=contribArt.address;
-        updatedArt.city=contribArt.city;
-        updatedArt.latitude=contribArt.latitude;
-        updatedArt.longitude=contribArt.latitude;
-        console.log(updatedArt.id)
+        updatedArt.title = contribArt.title;
+        updatedArt.description = contribArt.description;
+        updatedArt.artist = contribArt.artist;
+        updatedArt.address = contribArt.address;
+        updatedArt.city = contribArt.city;
+        updatedArt.latitude = contribArt.latitude;
+        updatedArt.longitude = contribArt.latitude;
+
         result = await this.artRepository.save(updatedArt);
-        console.log("ok")
 
         await this.propRepository.delete(id);
 
+        let tabIndex: number[] = [];
+        contribArt.pictures.forEach((elt, indice) => {
+          tabIndex[indice] = Number(elt.position);
+        });
+
         const filenames: string[] = contribArt.pictures.map((elt) => elt.url);
         if (filenames) {
-          switch(index){
+          const pictures: Picture[] = art.pictures.filter((elt) => {
+            //tabIndex.findIndex(elt.position)!=-1
+            return (
+              elt.position == tabIndex[0] ||
+              elt.position == tabIndex[1] ||
+              elt.position == tabIndex[2]
+            );
+          }); //art.pictures.map((elt) => elt.url);
+          const images: string[] = pictures.map((img) => img.url);
+
+          this.pictureService.editPictures(filenames, tabIndex, art);
+          this.pictureService.removePicturesFromFileSystem(images);
+          /*switch (index) {
             case 1: {
               const pictures: Picture[] = art.pictures.filter(
                 (elt) => elt.position == 1,
@@ -304,7 +322,7 @@ export class PropositionService {
               const pictures: Picture[] = art.pictures.filter(
                 (elt) => elt.position == 3,
               );
-    
+
               const images: string[] = pictures.map((elt) => elt.url);
               this.pictureService.editPictures(filenames, [3], art);
               this.pictureService.removePicturesFromFileSystem(images);
@@ -314,7 +332,7 @@ export class PropositionService {
               const pictures: Picture[] = art.pictures.filter(
                 (elt) => elt.position == 1 || elt.position == 2,
               );
-    
+
               const images: string[] = pictures.map((elt) => elt.url);
               this.pictureService.editPictures(filenames, [1, 2], art);
               this.pictureService.removePicturesFromFileSystem(images);
@@ -324,7 +342,7 @@ export class PropositionService {
               const pictures: Picture[] = art.pictures.filter(
                 (elt) => elt.position == 1 || elt.position == 3,
               );
-    
+
               const images: string[] = pictures.map((elt) => elt.url);
               this.pictureService.editPictures(filenames, [1, 3], art);
               this.pictureService.removePicturesFromFileSystem(images);
@@ -334,7 +352,7 @@ export class PropositionService {
               const pictures: Picture[] = art.pictures.filter(
                 (elt) => elt.position == 3 || elt.position == 2,
               );
-    
+
               const images: string[] = pictures.map((elt) => elt.url);
               this.pictureService.editPictures(filenames, [2, 3], art);
               this.pictureService.removePicturesFromFileSystem(images);
@@ -345,7 +363,7 @@ export class PropositionService {
               this.pictureService.editPictures(filenames, [1, 2, 3], art);
               this.pictureService.removePicturesFromFileSystem(images);
             }
-          }
+          }*/
         }
       }
     }
