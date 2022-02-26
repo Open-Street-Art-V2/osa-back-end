@@ -33,6 +33,8 @@ import { PropositionService } from './proposition.service';
 export class PropositionController {
   constructor(private readonly propositionService: PropositionService) {}
 
+  //Create proposition
+
   @HttpCode(HttpStatus.CREATED)
   @Post()
   @UseFilters(CreateArtBadRequestFilter)
@@ -62,8 +64,9 @@ export class PropositionController {
     };
   }
 
+  // Get all propostion
   @Get()
-  //@JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.ADMIN)
   async paginate(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
       return this.propositionService.paginate({
@@ -78,6 +81,7 @@ export class PropositionController {
     }
   }
 
+  // Get one proposition
   @Get(':id')
   @JwtAuth(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -115,6 +119,7 @@ export class PropositionController {
     return this.propositionService.findUserProposition(+id, req.user.id);
   }
 
+  // update proposition
   @Patch('user/:id')
   @JwtAuth(Role.USER)
   @UseFilters(CreateArtBadRequestFilter)
@@ -169,15 +174,19 @@ export class PropositionController {
     );
   }
 
+  // Validate multile proposition
+
   @Post('validate')
   @JwtAuth(Role.ADMIN)
   async validate(@Body() validatePropDto: ValidatePropDto) {
     return this.propositionService.validate(validatePropDto.propositions);
   }
   
-  /********************** Contribution *********************************** */
+  /********************** Contribution (I will create new controller later) *********************************** */
 
-  @Get()
+ // Get All contribution
+
+  @Get('get/contribution')
   @JwtAuth(Role.ADMIN)
   async getContribution(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
@@ -192,6 +201,8 @@ export class PropositionController {
       });
     }
   }
+
+  // Add contribution
 
   @HttpCode(HttpStatus.CREATED)
   @Post(':id')
@@ -225,8 +236,8 @@ export class PropositionController {
       message: 'Art suggestion successfully created!',
     };
   }
-
-  @Post('contrub/:id')
+// Validate contribution
+  @Post('contribution/:id')
   @JwtAuth(Role.ADMIN)
   async validateContribution(@Param('id') id: number) {
     return this.propositionService.validateContribution(id);

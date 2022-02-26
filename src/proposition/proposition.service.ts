@@ -312,8 +312,7 @@ export class PropositionService {
     try {
       await Promise.all(
         props.map(async (item) => {
-          const prop = await this.propRepository.findOne(item);
-          //art : real art id
+          const prop = await this.propRepository.findOne(item,{where:{art:IsNull()}});
           if (prop) {
             const { id, art, ...newArt }: { id?: number; art?: Art } & Art =
               prop;
