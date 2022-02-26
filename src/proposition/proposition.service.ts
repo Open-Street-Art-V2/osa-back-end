@@ -312,7 +312,9 @@ export class PropositionService {
     try {
       await Promise.all(
         props.map(async (item) => {
-          const prop = await this.propRepository.findOne(item,{where:{art:IsNull()}});
+          const prop = await this.propRepository.findOne(item, {
+            where: { art: IsNull() },
+          });
           if (prop) {
             const { id, art, ...newArt }: { id?: number; art?: Art } & Art =
               prop;
@@ -379,71 +381,6 @@ export class PropositionService {
 
           this.pictureService.editPictures(filenames, tabIndex, art);
           this.pictureService.removePicturesFromFileSystem(images);
-          /*switch (index) {
-            case 1: {
-              const pictures: Picture[] = art.pictures.filter(
-                (elt) => elt.position == 1,
-              );
-              const images: string[] = pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [1], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-              break;
-            }
-            case 2: {
-              const pictures: Picture[] = art.pictures.filter(
-                (elt) => elt.position == 2,
-              );
-              const images: string[] = pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [2], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-              break;
-            }
-            case 3: {
-              const pictures: Picture[] = art.pictures.filter(
-                (elt) => elt.position == 3,
-              );
-
-              const images: string[] = pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [3], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-              break;
-            }
-            case 4: {
-              const pictures: Picture[] = art.pictures.filter(
-                (elt) => elt.position == 1 || elt.position == 2,
-              );
-
-              const images: string[] = pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [1, 2], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-              break;
-            }
-            case 5: {
-              const pictures: Picture[] = art.pictures.filter(
-                (elt) => elt.position == 1 || elt.position == 3,
-              );
-
-              const images: string[] = pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [1, 3], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-              break;
-            }
-            case 6: {
-              const pictures: Picture[] = art.pictures.filter(
-                (elt) => elt.position == 3 || elt.position == 2,
-              );
-
-              const images: string[] = pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [2, 3], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-              break;
-            }
-            case 7: {
-              const images: string[] = art.pictures.map((elt) => elt.url);
-              this.pictureService.editPictures(filenames, [1, 2, 3], art);
-              this.pictureService.removePicturesFromFileSystem(images);
-            }
-          }*/
         }
       }
     }
