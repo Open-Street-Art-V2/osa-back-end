@@ -5,15 +5,15 @@ import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Picture } from './picture/picture.entity';
 import { PictureService } from './picture/picture.service';
-//import { CreateArtDto } from './dto/create-art.dto';
+import { CreateArtDto } from './dto/create-art.dto';
 import { UsersRepository } from 'src/users/user.repository';
 
 describe('ArtService', () => {
   let service;
   let repository;
-  //let pictureRepository;
-  //let pictureService;
-  //let userRepository;
+  let pictureRepository;
+  let pictureService;
+  let userRepository;
 
   const mockArtRepository = () => ({
     createArt: jest.fn(),
@@ -62,12 +62,12 @@ describe('ArtService', () => {
     }).compile();
     service = await module.get<ArtService>(ArtService);
     repository = await module.get<ArtRepository>(ArtRepository);
-    //pictureService = await module.get<PictureService>(PictureService);
-    //userRepository = await module.get<UsersRepository>(UsersRepository);
-    //pictureRepository = await module.get(getRepositoryToken(Picture));
+    pictureService = await module.get<PictureService>(PictureService);
+    userRepository = await module.get<UsersRepository>(UsersRepository);
+    pictureRepository = await module.get(getRepositoryToken(Picture));
   });
 
-  /*describe('CreateArt', () => {
+  describe('CreateArt', () => {
     it('Should save an art in the data base', async () => {
       repository.createArt.mockResolvedValue('SomeArt');
       expect(repository.createArt).not.toHaveBeenCalled();
@@ -88,15 +88,21 @@ describe('ArtService', () => {
       repository.findOne.mockResolvedValue(createArtDto);
       expect(repository.findOne).not.toHaveBeenCalled();
 
+      userRepository.findOne.mockResolvedValue(userId);
+      expect(userRepository.findOne).not.toHaveBeenCalled();
+
       const result = await service.createArt(createArtDto, userId, pictures);
-      expect(repository.createArt).toHaveBeenLastCalledWith(createArtDto);
+      expect(repository.createArt).toHaveBeenLastCalledWith(
+        createArtDto,
+        userId,
+      );
       expect(pictureService.createPictures).toHaveBeenLastCalledWith(
         createArtDto,
         pictures,
       );
       expect(result).toEqual('SomeArt');
     });
-  });*/
+  });
 
   describe('getArts', () => {
     it('Should get all arts', async () => {
@@ -128,7 +134,7 @@ describe('ArtService', () => {
     });
   });
 
-  /*describe('deleteArt', () => {
+  describe('deleteArt', () => {
     it('should delete an art', async () => {
       const picture: Picture = {
         position: 1,
@@ -141,6 +147,7 @@ describe('ArtService', () => {
           description: 'some description',
           latitude: 22.44,
           longitude: 223,
+          user: null,
         },
       };
       pictureRepository.find.mockResolvedValue([picture]);
@@ -153,5 +160,5 @@ describe('ArtService', () => {
         picture.url,
       ]);
     });
-  });*/
+  });
 });
