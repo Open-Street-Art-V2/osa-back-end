@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   IPaginationOptions,
@@ -152,6 +157,26 @@ export class ContributionService {
       );
     } catch (error) {
       throw error;
+    }
+  }
+
+  // Delete one contribution
+  async remove(id: number, user: any) {
+    try {
+      const prop: Proposition = await this.propRepository.findOne(id);
+      if (!prop)
+        throw new NotFoundException(`Proposition with id:${id} was not found`);
+      if (prop.user.id === user.id || user.role === 'ROLE_ADMIN') {
+        const pics: string[] = prop.pictures.map((pic) => pic.url);
+        await this.propPicService.removePicturesFromFileSystem(pics);
+        return await this.propRepository.remove(prop);
+      } else {
+        throw new UnauthorizedException(
+          'Must own the proposition to be able to delete it',
+        );
+      }
+    } catch (err) {
+      throw err;
     }
   }
 }

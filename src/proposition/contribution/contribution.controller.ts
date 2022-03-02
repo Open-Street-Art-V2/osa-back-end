@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -99,5 +100,13 @@ export class ContributionController {
     return this.contributionService.validateManyContribution(
       validatePropDto.propositions,
     );
+  }
+
+  //Delete contribution
+
+  @Delete(':id')
+  @JwtAuth(Role.ADMIN, Role.USER)
+  async remove(@Param('id') id: string, @Req() request: any) {
+    return await this.contributionService.remove(+id, request.user);
   }
 }
