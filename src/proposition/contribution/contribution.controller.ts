@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   Query,
   Req,
@@ -27,23 +28,32 @@ export class ContributionController {
   constructor(private readonly contributionService: ContributionService) {}
 
   @Get()
-  //@JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.ADMIN)
   async getContribution(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
-      return this.contributionService.paginateContribution({
+      return this.contributionService.findAllContribution({
         limit: paginationDto.limit,
         page: paginationDto.page,
       });
     } else {
-      return this.contributionService.paginateContribution({
+      return this.contributionService.findAllContribution({
         limit: 10,
         page: 1,
       });
     }
   }
 
+  // Get proposition by Id
+  @Get(':id')
+  @JwtAuth(Role.ADMIN)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.contributionService.findOne(+id);
+  }
+
+  // Add new Contribution
+
   @HttpCode(HttpStatus.CREATED)
-  @Post(':id')
+  @Post('add/:id')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
   @JwtAuth(Role.USER)
@@ -74,15 +84,17 @@ export class ContributionController {
       message: 'Art suggestion successfully created!',
     };
   }
-  // Validate contribution
-  @Post('validation/:id')
+  // Validate one contribution
+  @Post('validOne/:id')
   @JwtAuth(Role.ADMIN)
   async validateContribution(@Param('id') id: number) {
     return this.contributionService.validateContribution(id);
   }
 
-  @Post()
-  //@JwtAuth(Role.ADMIN)
+  // Validate a lot of contribution the same time
+
+  @Post('validMany')
+  @JwtAuth(Role.ADMIN)
   async validate(@Body() validatePropDto: ValidatePropDto) {
     return this.contributionService.validateManyContribution(
       validatePropDto.propositions,

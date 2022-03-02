@@ -27,7 +27,9 @@ export class ContributionService {
     @Inject(PictureService) private pictureService: PictureService,
   ) {}
 
-  async paginateContribution(
+  // Find All contribution ---> Default : 20 per pages
+
+  async findAllContribution(
     options: IPaginationOptions,
   ): Promise<Pagination<Proposition>> {
     options.limit =
@@ -38,6 +40,8 @@ export class ContributionService {
     });
     return result;
   }
+
+  // Add contribution
 
   async contribution(
     createPropositionDto: CreatePropositionDto,
@@ -73,6 +77,21 @@ export class ContributionService {
       throw err;
     }
   }
+
+  // Find contribution by Id
+
+  async findOne(id: number) {
+    try {
+      const prop: Proposition = await this.propRepository.findOne(id);
+      if (!prop)
+        throw new NotFoundException(`Proposition with id:${id} was not found`);
+      return prop;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  //Validate One contribition by Id
 
   async validateContribution(id: number) {
     let result;
@@ -120,6 +139,8 @@ export class ContributionService {
     }
     return result;
   }
+
+  //Validate a lot of contribution the same time
 
   async validateManyContribution(tabId: number[]) {
     try {
