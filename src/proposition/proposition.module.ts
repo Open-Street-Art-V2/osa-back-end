@@ -14,6 +14,8 @@ import fileName from 'src/utils/file_upload/filename';
 import { imageFilter } from 'src/utils/file_upload/filter';
 import { Picture } from 'src/art/picture/picture.entity';
 import { PictureService } from 'src/art/picture/picture.service';
+import { ContributionController } from './contribution/contribution.controller';
+import { ContributionService } from './contribution/contribution.service';
 
 @Module({
   imports: [
@@ -39,7 +41,12 @@ import { PictureService } from 'src/art/picture/picture.service';
       inject: [ConfigService],
     }),
   ],
-  controllers: [PropositionController],
-  providers: [PropositionService, PropPictureService, PictureService],
+  controllers: [PropositionController, ContributionController],
+  providers: [
+    PropositionService,
+    PropPictureService,
+    PictureService,
+    ContributionService,
+  ],
 })
 export class PropositionModule {}
