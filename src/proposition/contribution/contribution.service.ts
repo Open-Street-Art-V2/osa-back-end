@@ -179,4 +179,18 @@ export class ContributionService {
       throw err;
     }
   }
+
+  //remove a lot of contribution the same time
+
+  async deleteManyContribution(tabId: number[], user: any) {
+    try {
+      await Promise.all(
+        tabId.map(async (identifiant) => {
+          this.remove(identifiant, user);
+        }),
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
 }

@@ -109,4 +109,18 @@ export class ContributionController {
   async remove(@Param('id') id: string, @Req() request: any) {
     return await this.contributionService.remove(+id, request.user);
   }
+
+  // remove a lot of contribution the same time
+
+  @Delete()
+  @JwtAuth(Role.ADMIN)
+  async deleteMany(
+    @Body() validatePropDto: ValidatePropDto,
+    @Req() request: any,
+  ) {
+    return this.contributionService.deleteManyContribution(
+      validatePropDto.propositions,
+      request.user,
+    );
+  }
 }
