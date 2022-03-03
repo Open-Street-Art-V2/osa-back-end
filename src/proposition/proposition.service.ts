@@ -271,16 +271,16 @@ export class PropositionService {
   }
 
   async removeBatch(props: number[], userId: number) {
-    let result = { validated: [], notFound: [], notAuthorized: [] };
+    let result = { removed: [], notFound: [], notAuthorized: [] };
     try {
       await Promise.all(
         props.map(async (id) => {
           const prop = await this.propRepository.findOne(id);
           if (!prop) {
             result.notFound.push(id);
-          } else if (prop.user.id === userId) {
+          } else if (prop.user.id === userId || prop.user.role === 'ROLE_ADMIN') {
             this.propRepository.remove(prop);
-            result.validated.push(id);
+            result.removed.push(id);
           } else {
             result.notAuthorized.push(id);
           }
