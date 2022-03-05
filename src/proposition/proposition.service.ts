@@ -271,21 +271,20 @@ export class PropositionService {
   }
 
   async removeBatch(props: number[], user: any) {
-    let result = { validated: [], notFound: [], notAuthorized: [] };
+    let result = { removed: [], notFound: [], notAuthorized: [] };
+
     try {
       await Promise.all(
         props.map(async (id) => {
-          // J'AI JUSTE FAIT APPELLE À LA METHODE QUI SUPPRIME UNE SEULE PROPOSITION QUE TU AVAIT IMPLEMENTÉ (Oussama avait des Problemes)
-          this.remove(id, user);
-          /*const prop = await this.propRepository.findOne(id);
+          const prop = await this.propRepository.findOne(id);
           if (!prop) {
             result.notFound.push(id);
-          } else if (prop.user.id === userId || prop.user.role === 'ROLE_ADMIN') {
+          } else if (prop.user.id === user.id || user.role === 'ROLE_ADMIN') {
             this.propRepository.remove(prop);
             result.removed.push(id);
           } else {
             result.notAuthorized.push(id);
-          }*/
+          }
         }),
       );
     } catch (err) {
