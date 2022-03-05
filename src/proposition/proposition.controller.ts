@@ -170,7 +170,7 @@ export class PropositionController {
   async removeBatch(@Body() validatePropDto: ValidatePropDto, @Req() request) {
     return await this.propositionService.removeBatch(
       validatePropDto.propositions,
-      request.user.id,
+      request.user,
     );
   }
 

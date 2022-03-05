@@ -270,12 +270,13 @@ export class PropositionService {
     }
   }
 
-  async removeBatch(props: number[], userId: number) {
+  async removeBatch(props: number[], user: any) {
     let result = { validated: [], notFound: [], notAuthorized: [] };
     try {
       await Promise.all(
         props.map(async (id) => {
-          const prop = await this.propRepository.findOne(id);
+          this.remove(id,user)
+          /*const prop = await this.propRepository.findOne(id);
           if (!prop) {
             result.notFound.push(id);
           } else if (prop.user.id === userId) {
@@ -283,7 +284,7 @@ export class PropositionService {
             result.validated.push(id);
           } else {
             result.notAuthorized.push(id);
-          }
+          }*/
         }),
       );
     } catch (err) {

@@ -105,7 +105,7 @@ export class ContributionController {
   //Delete contribution
 
   @Delete(':id')
-  @JwtAuth(Role.ADMIN, Role.USER)
+  @JwtAuth(Role.ADMIN)
   async remove(@Param('id') id: string, @Req() request: any) {
     return await this.contributionService.remove(+id, request.user);
   }
