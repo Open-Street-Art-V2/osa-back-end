@@ -114,7 +114,7 @@ export class ContributionService {
         updatedArt.address = contribArt.address;
         updatedArt.city = contribArt.city;
         updatedArt.latitude = contribArt.latitude;
-        updatedArt.longitude = contribArt.latitude;
+        updatedArt.longitude = contribArt.longitude;
 
         result = await this.artRepository.save(updatedArt);
 
