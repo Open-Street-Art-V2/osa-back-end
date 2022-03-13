@@ -98,81 +98,95 @@ export class ContributionService {
 
   //Validate One contribition by Id
 
-  async validateContribution(id: number) {
-    let result;
-    const prop = await this.propRepository.findOne(id);
-    if (prop) {
-      const { id, art, ...contribArt }: { id?: number; art?: Art } & Art = prop;
-      console.log(prop);
-      if (art.id) {
-        const updatedArt: Art = new Art();
-        // updatedArt={...contribArt}
-        updatedArt.id = art.id;
-        updatedArt.title = contribArt.title;
-        updatedArt.description = contribArt.description;
-        updatedArt.artist = contribArt.artist;
-        updatedArt.address = contribArt.address;
-        updatedArt.city = contribArt.city;
-        updatedArt.latitude = contribArt.latitude;
-        updatedArt.longitude = contribArt.longitude;
+  async validateContribution(tabId: number[]) {
+    const response = { validated: [], notFound: [] };
+    try {
+      await Promise.all(
+        tabId.map(async (id) => {
+          const prop = await this.propRepository.findOne(id);
+          if (prop) {
+            const { id, art, ...contribArt }: { id?: number; art?: Art } & Art =
+              prop;
+            console.log(prop);
+            if (art.id) {
+              const updatedArt: Art = new Art();
+              // updatedArt={...contribArt}
+              updatedArt.id = art.id;
+              updatedArt.title = contribArt.title;
+              updatedArt.description = contribArt.description;
+              updatedArt.artist = contribArt.artist;
+              updatedArt.address = contribArt.address;
+              updatedArt.city = contribArt.city;
+              updatedArt.latitude = contribArt.latitude;
+              updatedArt.longitude = contribArt.longitude;
 
-        result = await this.artRepository.save(updatedArt);
+              await this.artRepository.save(updatedArt);
 
-        await this.propRepository.delete(id);
+              await this.propRepository.delete(id);
 
-        const tabIndex: number[] = [];
-        contribArt.pictures.forEach((elt, indice) => {
-          tabIndex[indice] = Number(elt.position);
-        });
+              const tabIndex: number[] = [];
+              contribArt.pictures.forEach((elt, indice) => {
+                tabIndex[indice] = Number(elt.position);
+              });
 
-        const filenames: string[] = contribArt.pictures.map((elt) => elt.url);
-        if (filenames) {
-          const pictures: Picture[] = art.pictures.filter((elt) => {
-            //tabIndex.findIndex(elt.position)!=-1
-            return (
-              elt.position == tabIndex[0] ||
-              elt.position == tabIndex[1] ||
-              elt.position == tabIndex[2]
-            );
-          }); //art.pictures.map((elt) => elt.url);
-          const images: string[] = pictures.map((img) => img.url);
+              const filenames: string[] = contribArt.pictures.map(
+                (elt) => elt.url,
+              );
+              if (filenames) {
+                const pictures: Picture[] = art.pictures.filter((elt) => {
+                  //tabIndex.findIndex(elt.position)!=-1
+                  return (
+                    elt.position == tabIndex[0] ||
+                    elt.position == tabIndex[1] ||
+                    elt.position == tabIndex[2]
+                  );
+                }); //art.pictures.map((elt) => elt.url);
+                const images: string[] = pictures.map((img) => img.url);
 
-          this.pictureService.editPictures(filenames, tabIndex, art);
-          this.pictureService.removePicturesFromFileSystem(images);
-        }
-      }
+                this.pictureService.editPictures(filenames, tabIndex, art);
+                this.pictureService.removePicturesFromFileSystem(images);
+              }
+
+              response.validated.push(id);
+            }
+          } else {
+            response.notFound.push(id);
+          }
+        }),
+      );
+    } catch (error) {
+      throw error;
     }
-    return result;
+    return response;
   }
 
-  //Validate a lot of contribution the same time
+  /*Validate a lot of contribution the same time
 
   async validateManyContribution(tabId: number[]) {
     try {
       await Promise.all(
         tabId.map(async (identifiant) => {
-          console.log(identifiant);
           this.validateContribution(identifiant);
         }),
       );
     } catch (error) {
       throw error;
     }
-  }
+  }*/
 
   // Delete one contribution
   async remove(id: number, user: any) {
     try {
       const prop: Proposition = await this.propRepository.findOne(id);
       if (!prop)
-        throw new NotFoundException(`Proposition with id:${id} was not found`);
+        throw new NotFoundException(`Contribution with id:${id} was not found`);
       if (prop.user.id === user.id || user.role === 'ROLE_ADMIN') {
         const pics: string[] = prop.pictures.map((pic) => pic.url);
         await this.propPicService.removePicturesFromFileSystem(pics);
         return await this.propRepository.remove(prop);
       } else {
         throw new UnauthorizedException(
-          'Must own the proposition to be able to delete it',
+          'Must own the contribution to be able to delete it',
         );
       }
     } catch (err) {
@@ -183,14 +197,25 @@ export class ContributionService {
   //remove a lot of contribution the same time
 
   async deleteManyContribution(tabId: number[], user: any) {
+    const response = { removed: [], notFound: [], notAuthorized: [] };
+
     try {
       await Promise.all(
-        tabId.map(async (identifiant) => {
-          this.remove(identifiant, user);
+        tabId.map(async (id) => {
+          const prop = await this.propRepository.findOne(id);
+          if (!prop) {
+            response.notFound.push(id);
+          } else if (prop.user.id === user.id || user.role === 'ROLE_ADMIN') {
+            this.propRepository.remove(prop);
+            response.removed.push(id);
+          } else {
+            response.notAuthorized.push(id);
+          }
         }),
       );
-    } catch (error) {
-      throw error;
+    } catch (err) {
+      throw err;
     }
+    return response;
   }
 }
