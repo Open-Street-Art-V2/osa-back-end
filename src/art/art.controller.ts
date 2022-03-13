@@ -91,6 +91,22 @@ export class ArtController {
     }
   }
 
+  //Get Art by Title ----> eg : art/title/Art One
+  @Get('title/:title')
+  public async getArtByTitle(@Param('title') title: string) {
+    const art: Art = await this.artService.getArtByTitle(title);
+    return {
+      statusCode: 200,
+      art: art,
+    };
+  }
+
+  //Get Art by Artist ----> eg : art/artist/Jean
+  @Get('artist/:artist')
+  public async getArtByArtist(@Param('artist') artist: string) {
+    return await this.artService.getArtByArtist(artist);
+  }
+
   @Get(':artId')
   @ApiParam({ description: 'Art ID', name: 'artId', type: 'number' })
   public async getArt(@Param('artId') artId: number) {

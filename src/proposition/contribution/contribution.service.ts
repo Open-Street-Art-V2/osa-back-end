@@ -38,7 +38,7 @@ export class ContributionService {
     options: IPaginationOptions,
   ): Promise<Pagination<Proposition>> {
     options.limit =
-      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+      options.limit > 10 || options.limit <= 0 ? 10 : options.limit;
     options.page = options.page <= 0 ? 1 : options.page;
     const result = await paginate<Proposition>(this.propRepository, options, {
       where: { art: Not(IsNull()) },

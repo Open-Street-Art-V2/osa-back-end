@@ -57,7 +57,7 @@ export class ContributionController {
   @Post('add/:id')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
-  @JwtAuth(Role.USER)
+  @JwtAuth(Role.ADMIN)
   async contribution(
     @Param('id') id: number,
     @UploadedFiles() files: Array<Express.Multer.File>,
