@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   ParseIntPipe,
   Patch,
@@ -18,6 +19,26 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Get('profile')
+  @JwtAuth(Role.ADMIN, Role.USER)
+  async profile(@Req() request) {
+    const profile = await this.usersService.profile(request.user?.id);
+    return {
+      statusCode: 200,
+      profile,
+    };
+  }
+
+  @Get('profile/:id')
+  @JwtAuth(Role.ADMIN, Role.USER)
+  async user(@Param('id', ParseIntPipe) id: number) {
+    const profile = await this.usersService.userProfile(id);
+    return {
+      statusCode: 200,
+      profile,
+    };
+  }
 
   // Update logged in user profile info
   @Patch()
