@@ -18,6 +18,34 @@ export class UsersService {
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
   ) {}
 
+  public async profile(userId: number) {
+    const result = await this.usersRepository.findOne(userId);
+    if (!result)
+      throw new HttpException(
+        `User with id:${userId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    const { arts, ...user } = result;
+    return {
+      ...user,
+      arts: arts.length,
+    };
+  }
+
+  public async userProfile(userId: number) {
+    const result = await this.usersRepository.findOne(userId);
+    if (!result)
+      throw new HttpException(
+        `User with id:${userId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    const { id, email, birthDate, role, created_at, arts, ...user } = result;
+    return {
+      ...user,
+      arts: arts.length,
+    };
+  }
+
   public async getUserByLogin(email: string): Promise<User> {
     const findUser = await this.usersRepository.findOne({
       where: { email },
