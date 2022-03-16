@@ -97,7 +97,6 @@ export class ArtController {
     return await this.artService.getByTitleLike(title);
   }
 
-  //Get Art by Title ----> eg : art/title/Art One
   @Get('city/:city')
   public async getArtByCity(@Param('city') city: string) {
     return await this.artService.getArtByCity(city);
