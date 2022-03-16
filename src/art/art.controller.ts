@@ -94,11 +94,13 @@ export class ArtController {
   //Get Art by Title ----> eg : art/title/Art One
   @Get('title/:title')
   public async getArtByTitle(@Param('title') title: string) {
-    const art: Art = await this.artService.getArtByTitle(title);
-    return {
-      statusCode: 200,
-      art: art,
-    };
+    return await this.artService.getByTitleLike(title);
+  }
+
+  //Get Art by Title ----> eg : art/title/Art One
+  @Get('city/:city')
+  public async getArtByCity(@Param('city') city: string) {
+    return await this.artService.getArtByCity(city);
   }
 
   //Get Art by Artist ----> eg : art/artist/Jean

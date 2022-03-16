@@ -10,7 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateArtDto } from './dto/create-art.dto';
 import { Art } from './art.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, Like, Repository } from 'typeorm';
 import { Picture } from './picture/picture.entity';
 import { PictureService } from './picture/picture.service';
 import { UsersRepository } from 'src/users/user.repository';
@@ -85,11 +85,30 @@ export class ArtService {
     return findArt;
   }
 
-  public async getArtByArtist(artist: string): Promise<[Art[], number]> {
-    const findArt = await this.artRepository.findAndCount({
-      where: {
-        artist: artist,
-      },
+  public async getByTitleLike(title: string) {
+    const findArt = await this.artRepository.find({
+      title: Like(`${title}%`),
+    });
+    if (!findArt) {
+      throw new NotFoundException();
+    }
+    return findArt;
+  }
+
+  public async getArtByArtist(artist: string): Promise<Art[]> {
+    const findArt = await this.artRepository.find({
+      artist: Like(`${artist}%`),
+    });
+
+    if (!findArt) {
+      throw new NotFoundException('Art not found');
+    }
+    return findArt;
+  }
+
+  public async getArtByCity(city: string): Promise<Art[]> {
+    const findArt = await this.artRepository.find({
+      city: Like(`${city}%`),
     });
 
     if (!findArt) {
