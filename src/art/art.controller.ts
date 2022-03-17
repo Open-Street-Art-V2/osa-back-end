@@ -19,6 +19,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
+import { PaginationDto } from 'src/proposition/dto/pagination.dto';
 import { exceptionUploadFiles } from 'src/utils/file.utils';
 import CreateArtBadRequestFilter from 'src/utils/file_upload/exception-filters/delete-file.ef.ts';
 import { DeleteResult } from 'typeorm';
@@ -93,19 +94,58 @@ export class ArtController {
 
   //Get Art by Title ----> eg : art/title/Art One
   @Get('title/:title')
-  public async getArtByTitle(@Param('title') title: string) {
-    return await this.artService.getByTitleLike(title);
+  public async getArtByTitle(
+    @Param('title') title: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return await this.artService.getByTitleLike(title, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return await this.artService.getByTitleLike(title, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    }
   }
 
   @Get('city/:city')
-  public async getArtByCity(@Param('city') city: string) {
-    return await this.artService.getArtByCity(city);
+  public async getArtByCity(
+    @Param('city') city: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return await this.artService.getArtByCity(city, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return await this.artService.getArtByCity(city, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    }
   }
 
   //Get Art by Artist ----> eg : art/artist/Jean
   @Get('artist/:artist')
-  public async getArtByArtist(@Param('artist') artist: string) {
-    return await this.artService.getArtByArtist(artist);
+  public async getArtByArtist(
+    @Param('artist') artist: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return await this.artService.getArtByArtistPagination(artist, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return await this.artService.getArtByArtistPagination(artist, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    }
   }
 
   @Get(':artId')

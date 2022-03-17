@@ -15,6 +15,11 @@ import { Picture } from './picture/picture.entity';
 import { PictureService } from './picture/picture.service';
 import { UsersRepository } from 'src/users/user.repository';
 import { User } from 'src/users/user.entity';
+import {
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class ArtService {
@@ -85,36 +90,63 @@ export class ArtService {
     return findArt;
   }
 
-  public async getByTitleLike(title: string) {
-    const findArt = await this.artRepository.find({
+  public async getArtByArtist(artist: string): Promise<Art> {
+    const findArt = await this.artRepository.findOne({
+      where: {
+        artist: artist,
+      },
+    });
+
+    if (!findArt) {
+      throw new NotFoundException('Art not found');
+    }
+    return findArt;
+  }
+
+  public async getByTitleLike(title: string, options: IPaginationOptions) {
+    options.limit =
+      options.limit <= 0 || options.limit > 20 ? 10 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+
+    const result = await paginate<Art>(this.artRepository, options, {
+      where: { title: Like(`${title}%`) },
+    });
+
+    /*const findArt = await this.artRepository.find({
       title: Like(`${title}%`),
     });
     if (!findArt) {
       throw new NotFoundException();
-    }
-    return findArt;
+    }*/
+
+    return result;
   }
 
-  public async getArtByArtist(artist: string): Promise<Art[]> {
-    const findArt = await this.artRepository.find({
-      artist: Like(`${artist}%`),
-    });
+  public async getArtByArtistPagination(
+    artist: string,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Art>> {
+    options.limit =
+      options.limit <= 0 || options.limit > 20 ? 10 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
 
-    if (!findArt) {
-      throw new NotFoundException('Art not found');
-    }
-    return findArt;
+    const result = await paginate<Art>(this.artRepository, options, {
+      where: { artist: Like(`${artist}%`) },
+    });
+    return result;
   }
 
-  public async getArtByCity(city: string): Promise<Art[]> {
-    const findArt = await this.artRepository.find({
-      city: Like(`${city}%`),
-    });
+  public async getArtByCity(
+    city: string,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Art>> {
+    options.limit =
+      options.limit <= 0 || options.limit > 20 ? 10 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
 
-    if (!findArt) {
-      throw new NotFoundException('Art not found');
-    }
-    return findArt;
+    return await paginate<Art>(this.artRepository, options, {
+      where: { city: Like(`${city}%`) },
+    });
   }
 
   public async editArt(
