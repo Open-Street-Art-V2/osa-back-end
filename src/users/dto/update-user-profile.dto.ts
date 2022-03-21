@@ -30,6 +30,11 @@ export class UpdateUserProfileDTO {
   firstname?: string;
 
   @ApiProperty()
+  @MinLength(8)
+  @MaxLength(25)
+  password?: string;
+
+  @ApiProperty()
   @IsNotEmpty()
   @IsAlpha()
   @IsOptional()

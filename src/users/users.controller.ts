@@ -8,15 +8,15 @@ import {
   Patch,
   Req,
 } from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
 import { PasswordDTO } from './dto/update-password.dto';
 import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
-import { UpdateUserRoleDTO } from './dto/update-user-role.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@ApiTags('Users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -37,6 +37,15 @@ export class UsersController {
     return {
       statusCode: 200,
       profile,
+    };
+  }
+
+  @Get('search')
+  async getUsersByFullname(@Body() body: { fullname: string }) {
+    const result = await this.usersService.getUsersByFullname(body.fullname);
+    return {
+      statusCode: 200,
+      results: result,
     };
   }
 
@@ -93,9 +102,9 @@ export class UsersController {
   @JwtAuth(Role.ADMIN)
   async changeRole(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserRoleDTO: UpdateUserRoleDTO,
+    // @Body() updateUserRoleDTO: UpdateUserRoleDTO,
   ) {
-    await this.usersService.changeRole(id, updateUserRoleDTO.role);
+    await this.usersService.changeRole(id /*updateUserRoleDTO.role*/);
     return {
       statusCode: 200,
       message: 'User role altered successfully!',

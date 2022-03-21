@@ -18,7 +18,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
 import { exceptionUploadFiles } from 'src/utils/file.utils';
@@ -30,6 +30,7 @@ import { ValidatePropDto } from './dto/validate-proposition.dto';
 import { PropositionService } from './proposition.service';
 
 @Controller('proposition')
+@ApiTags("Proposition")
 export class PropositionController {
   constructor(private readonly propositionService: PropositionService) {}
 

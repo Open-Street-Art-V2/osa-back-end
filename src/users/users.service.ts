@@ -11,6 +11,7 @@ import { UsersRepository } from './user.repository';
 import { PasswordDTO } from './dto/update-password.dto';
 import { Role } from 'src/auth/roles/role.enum';
 import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -58,6 +59,24 @@ export class UsersService {
     return findUser;
   }
 
+  public async getUsersByFullname(fullname: string) {
+    try {
+      const result = await this.usersRepository
+        .createQueryBuilder('user')
+        .where(
+          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname",
+          {
+            fullname: '%' + fullname.split(' ').join('% %') + '%',
+          },
+        )
+        .getMany();
+      return result;
+    } catch (err) {
+      console.log(err);
+      throw new NotFoundException('User not found');
+    }
+  }
+
   public async createUser(createUserDTO: CreateUserDTO): Promise<User> {
     return await this.usersRepository.createUser(createUserDTO);
   }
@@ -81,6 +100,12 @@ export class UsersService {
     updateUserProfileDTO: UpdateUserProfileDTO,
     id: number,
   ) {
+    if (updateUserProfileDTO.password) {
+      updateUserProfileDTO.password = await bcrypt.hash(
+        updateUserProfileDTO.password,
+        10,
+      );
+    }
     const result = await this.usersRepository.update(
       { id: id },
       { ...updateUserProfileDTO },
@@ -89,7 +114,7 @@ export class UsersService {
     return result;
   }
 
-  public async changeRole(id: number, role: Role) {
-    return await this.usersRepository.update({ id: id }, { role: role });
+  public async changeRole(id: number /*role: Role*/) {
+    return await this.usersRepository.update({ id: id }, { role: Role.ADMIN });
   }
 }

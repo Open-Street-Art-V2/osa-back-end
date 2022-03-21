@@ -15,6 +15,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
 import { exceptionUploadFiles } from 'src/utils/file.utils';
@@ -25,6 +26,7 @@ import { ValidatePropDto } from '../dto/validate-proposition.dto';
 import { ContributionService } from './contribution.service';
 
 @Controller('contribution')
+@ApiTags('Contribution')
 export class ContributionController {
   constructor(private readonly contributionService: ContributionService) {}
 
