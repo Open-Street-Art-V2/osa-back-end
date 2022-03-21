@@ -76,9 +76,12 @@ export class UsersService {
         .getMany();
       return result;
     } catch (err) {
-      console.log(err);
       throw new NotFoundException('User not found');
     }
+  }
+
+  public async getBlockedUsers() {
+    return this.usersRepository.find({ blocked: true });
   }
 
   public async createUser(createUserDTO: CreateUserDTO): Promise<User> {
@@ -114,7 +117,6 @@ export class UsersService {
       { id: id },
       { ...updateUserProfileDTO },
     );
-    console.log(result);
     return result;
   }
 
@@ -124,7 +126,6 @@ export class UsersService {
         { id: id },
         { blocked: blocked },
       );
-      console.log(result);
       if (result && result.affected === 0)
         throw new NotFoundException('User not found');
       return result;

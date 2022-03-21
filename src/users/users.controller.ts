@@ -49,6 +49,16 @@ export class UsersController {
     };
   }
 
+  @Get('blocked')
+  @JwtAuth(Role.ADMIN)
+  async getBlockedUsers() {
+    const result = await this.usersService.getBlockedUsers();
+    return {
+      statusCode: 200,
+      results: result,
+    };
+  }
+
   // Update logged in user profile info
   @Patch()
   @JwtAuth(Role.ADMIN, Role.USER)
