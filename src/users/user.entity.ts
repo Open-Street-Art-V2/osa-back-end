@@ -51,4 +51,7 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public created_at: Date;
+
+  @Column({ default: false })
+  blocked: boolean;
 }

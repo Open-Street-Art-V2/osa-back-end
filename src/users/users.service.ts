@@ -20,7 +20,9 @@ export class UsersService {
   ) {}
 
   public async profile(userId: number) {
-    const result = await this.usersRepository.findOne(userId);
+    const result = await this.usersRepository.findOne(userId, {
+      where: { blocked: false },
+    });
     if (!result)
       throw new HttpException(
         `User with id:${userId} not found`,
@@ -34,7 +36,9 @@ export class UsersService {
   }
 
   public async userProfile(userId: number) {
-    const result = await this.usersRepository.findOne(userId);
+    const result = await this.usersRepository.findOne(userId, {
+      where: { blocked: false },
+    });
     if (!result)
       throw new HttpException(
         `User with id:${userId} not found`,
@@ -50,12 +54,12 @@ export class UsersService {
   public async getUserByLogin(email: string): Promise<User> {
     const findUser = await this.usersRepository.findOne({
       where: { email },
-      select: ['email', 'password', 'id', 'role'],
+      select: ['email', 'password', 'id', 'role', 'blocked'],
     });
-
     if (!findUser) {
       throw new NotFoundException('User not found');
-    }
+    } else if (findUser.blocked == true)
+      throw new HttpException('Account blocked', HttpStatus.UNAUTHORIZED);
     return findUser;
   }
 
@@ -112,6 +116,22 @@ export class UsersService {
     );
     console.log(result);
     return result;
+  }
+
+  public async block(id: number, blocked: boolean) {
+    try {
+      const result = await this.usersRepository.update(
+        { id: id },
+        { blocked: blocked },
+      );
+      console.log(result);
+      if (result && result.affected === 0)
+        throw new NotFoundException('User not found');
+      return result;
+    } catch (err) {
+      if (err instanceof NotFoundException) throw err;
+      throw new HttpException('Block failed', HttpStatus.BAD_REQUEST);
+    }
   }
 
   public async changeRole(id: number /*role: Role*/) {

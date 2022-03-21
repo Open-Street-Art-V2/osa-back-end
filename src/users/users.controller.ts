@@ -75,6 +75,26 @@ export class UsersController {
     };
   }
 
+  @Patch('block/:id')
+  @JwtAuth(Role.ADMIN)
+  async blockUser(@Param('id', ParseIntPipe) id: number) {
+    await this.usersService.block(id, true);
+    return {
+      statusCode: 200,
+      message: 'User blocked successfully!',
+    };
+  }
+
+  @Patch('unblock/:id')
+  @JwtAuth(Role.ADMIN)
+  async unblockUser(@Param('id', ParseIntPipe) id: number) {
+    await this.usersService.block(id, false);
+    return {
+      statusCode: 200,
+      message: 'User unblocked successfully!',
+    };
+  }
+
   // Delete user by id (for ADMINS)
   @Delete(':id')
   @JwtAuth(Role.ADMIN)
