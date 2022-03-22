@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
   Req,
 } from '@nestjs/common';
@@ -42,7 +43,7 @@ export class UsersController {
     };
   }
 
-  @Get('search')
+  @Post('search')
   async getUsersByFullname(
     @Body() body: { fullname: string },
     @Query() paginationDto: PaginationDto,
