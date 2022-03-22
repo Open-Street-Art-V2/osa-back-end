@@ -12,6 +12,7 @@ import { PasswordDTO } from './dto/update-password.dto';
 import { Role } from 'src/auth/roles/role.enum';
 import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 import * as bcrypt from 'bcrypt';
+import { PaginationDto } from 'src/proposition/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -63,16 +64,27 @@ export class UsersService {
     return findUser;
   }
 
-  public async getUsersByFullname(fullname: string) {
+  public async getUsersByFullname(
+    fullname: string,
+    paginationOptions: PaginationDto,
+  ) {
+    paginationOptions.limit =
+      paginationOptions.limit > 20 || paginationOptions.limit <= 0
+        ? 20
+        : paginationOptions.limit;
+    paginationOptions.page =
+      paginationOptions.page <= 0 ? 1 : paginationOptions.page;
     try {
       const result = await this.usersRepository
         .createQueryBuilder('user')
         .where(
-          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname",
+          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname ORDER BY firstname",
           {
             fullname: '%' + fullname.split(' ').join('% %') + '%',
           },
         )
+        .take(paginationOptions.limit)
+        .skip(paginationOptions.limit * (paginationOptions.page - 1))
         .getMany();
       return result;
     } catch (err) {

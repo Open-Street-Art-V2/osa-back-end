@@ -6,11 +6,13 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { JwtAuth } from 'src/auth/decorators/auth.decorator';
 import { Role } from 'src/auth/roles/role.enum';
+import { PaginationDto } from 'src/proposition/dto/pagination.dto';
 import { PasswordDTO } from './dto/update-password.dto';
 import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 import { UsersService } from './users.service';
@@ -41,8 +43,22 @@ export class UsersController {
   }
 
   @Get('search')
-  async getUsersByFullname(@Body() body: { fullname: string }) {
-    const result = await this.usersService.getUsersByFullname(body.fullname);
+  async getUsersByFullname(
+    @Body() body: { fullname: string },
+    @Query() paginationDto: PaginationDto,
+  ) {
+    let result = [];
+    if (Object.keys(paginationDto).length === 2) {
+      result = await this.usersService.getUsersByFullname(
+        body.fullname,
+        paginationDto,
+      );
+    } else {
+      result = await this.usersService.getUsersByFullname(body.fullname, {
+        limit: 10,
+        page: 1,
+      });
+    }
     return {
       statusCode: 200,
       results: result,
