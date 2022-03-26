@@ -77,17 +77,25 @@ export class UsersService {
     try {
       const result = await this.usersRepository
         .createQueryBuilder('user')
+        .leftJoin('user.arts', 'arts')
+        .select('user.id', 'id')
+        .addSelect('user.firstname', 'firstname')
+        .addSelect('user.name', 'name')
+        .addSelect('user.favoriteCity', 'favoriteCity')
+        .addSelect('COUNT(arts.id)', 'arts')
         .where(
-          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname ORDER BY firstname",
+          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname",
           {
             fullname: '%' + fullname.split(' ').join('% %') + '%',
           },
         )
-        .take(paginationOptions.limit)
-        .skip(paginationOptions.limit * (paginationOptions.page - 1))
-        .getMany();
+        .groupBy('user.id')
+        .limit(paginationOptions.limit)
+        .offset(paginationOptions.limit * (paginationOptions.page - 1))
+        .getRawMany();
       return result;
     } catch (err) {
+      console.log(err);
       throw new NotFoundException('User not found');
     }
   }
