@@ -32,6 +32,7 @@ export class UpdateUserProfileDTO {
   @ApiProperty()
   @MinLength(8)
   @MaxLength(25)
+  @IsOptional()
   password?: string;
 
   @ApiProperty()

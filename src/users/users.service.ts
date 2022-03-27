@@ -78,11 +78,13 @@ export class UsersService {
       const result = await this.usersRepository
         .createQueryBuilder('user')
         .leftJoin('user.arts', 'arts')
-        .select('user.id', 'id')
-        .addSelect('user.firstname', 'firstname')
-        .addSelect('user.name', 'name')
-        .addSelect('user.favoriteCity', 'favoriteCity')
-        .addSelect('COUNT(arts.id)', 'arts')
+        .select([
+          'user.id AS id',
+          'user.firstname AS firstname',
+          'user.name AS name',
+          'user.favoriteCity AS favoriteCity',
+          'COUNT(arts.id) AS arts',
+        ])
         .where(
           "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname",
           {

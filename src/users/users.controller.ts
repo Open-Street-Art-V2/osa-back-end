@@ -83,7 +83,8 @@ export class UsersController {
     @Body() updateUserProfileDTO: UpdateUserProfileDTO,
     @Req() req,
   ) {
-    await this.usersService.editProfile(updateUserProfileDTO, req.user.id);
+    if (Object.keys(updateUserProfileDTO).length !== 0)
+      await this.usersService.editProfile(updateUserProfileDTO, req.user.id);
     return {
       statusCode: 200,
       message: 'Profile edited successfully!',
