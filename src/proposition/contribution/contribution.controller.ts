@@ -46,7 +46,7 @@ export class ContributionController {
     }
   }
 
-  // Get proposition by Id
+  // Get contribution by Id
   @Get(':id')
   @JwtAuth(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -59,7 +59,7 @@ export class ContributionController {
   @Post('add/:id')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
-  @JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.USER)
   async contribution(
     @Param('id') id: number,
     @UploadedFiles() files: Array<Express.Multer.File>,
