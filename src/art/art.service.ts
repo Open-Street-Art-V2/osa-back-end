@@ -122,6 +122,24 @@ export class ArtService {
     return result;
   }
 
+  public async getByTitleOrCityOrArtist(
+    search: string,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Art>> {
+    options.limit =
+      options.limit <= 0 || options.limit > 20 ? 10 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+
+    const result = await paginate<Art>(this.artRepository, options, {
+      where: [
+        { title: Like(`${search}%`) },
+        { city: Like(`${search}%`) },
+        { artist: Like(`${search}%`) },
+      ],
+    });
+    return result;
+  }
+
   public async getArtByArtistPagination(
     artist: string,
     options: IPaginationOptions,
