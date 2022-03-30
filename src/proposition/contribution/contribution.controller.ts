@@ -46,7 +46,7 @@ export class ContributionController {
     }
   }
 
-  // Get proposition by Id
+  // Get contribution by Id
   @Get(':id')
   @JwtAuth(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {

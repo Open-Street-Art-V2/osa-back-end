@@ -92,6 +92,24 @@ export class ArtController {
     }
   }
 
+  @Get('search/:search')
+  public async getArt_By_Title_Artist_City(
+    @Param('search') search: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return await this.artService.getByTitleOrCityOrArtist(search, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return await this.artService.getByTitleOrCityOrArtist(search, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    }
+  }
+
   //Get Art by Title ----> eg : art/title/Art One
   @Get('title/:title')
   public async getArtByTitle(
