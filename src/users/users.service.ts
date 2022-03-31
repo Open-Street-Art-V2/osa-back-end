@@ -141,17 +141,30 @@ export class UsersService {
     updateUserProfileDTO: UpdateUserProfileDTO,
     id: number,
   ) {
-    if (updateUserProfileDTO.password) {
-      updateUserProfileDTO.password = await bcrypt.hash(
-        updateUserProfileDTO.password,
-        10,
+    try {
+      if (updateUserProfileDTO.password) {
+        updateUserProfileDTO.password = await bcrypt.hash(
+          updateUserProfileDTO.password,
+          10,
+        );
+      }
+      const result = await this.usersRepository.update(
+        { id: id },
+        { ...updateUserProfileDTO },
+      );
+      return result;
+    } catch (err) {
+      if (err?.code === 'ER_DUP_ENTRY') {
+        throw new HttpException(
+          'User with that email already exists',
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    const result = await this.usersRepository.update(
-      { id: id },
-      { ...updateUserProfileDTO },
-    );
-    return result;
   }
 
   public async block(id: number, blocked: boolean) {
