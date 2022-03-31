@@ -46,6 +46,27 @@ export class ContributionController {
     }
   }
 
+  // Get user contribution
+
+  @Get('user/:id')
+  @JwtAuth(Role.USER)
+  async getUserContribution(
+    @Param('id') id: number,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return this.contributionService.getUserContribution(id, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return this.contributionService.getUserContribution(id, {
+        limit: 10,
+        page: 1,
+      });
+    }
+  }
+
   // Get contribution by Id
   @Get(':id')
   @JwtAuth(Role.ADMIN)
