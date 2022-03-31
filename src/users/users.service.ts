@@ -36,16 +36,21 @@ export class UsersService {
     };
   }
 
-  public async userProfile(userId: number) {
-    const result = await this.usersRepository.findOne(userId, {
-      where: { blocked: false },
-    });
+  public async userProfile(userId: number, authUser) {
+    let result;
+    if (authUser) {
+      result = await this.usersRepository.findOne(userId);
+    } else {
+      result = await this.usersRepository.findOne(userId, {
+        where: { blocked: false },
+      });
+    }
     if (!result)
       throw new HttpException(
         `User with id:${userId} not found`,
         HttpStatus.NOT_FOUND,
       );
-    const { id, email, birthDate, role, created_at, arts, ...user } = result;
+    const { id, email, birthDate, created_at, arts, ...user } = result;
     return {
       ...user,
       arts: arts.length,
@@ -67,7 +72,16 @@ export class UsersService {
   public async getUsersByFullname(
     fullname: string,
     paginationOptions: PaginationDto,
+    user,
   ) {
+    let query = '';
+    if (user) {
+      query =
+        "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname";
+    } else {
+      query =
+        "(concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname) AND blocked=0";
+    }
     paginationOptions.limit =
       paginationOptions.limit > 20 || paginationOptions.limit <= 0
         ? 20
@@ -83,21 +97,19 @@ export class UsersService {
           'user.firstname AS firstname',
           'user.name AS name',
           'user.favoriteCity AS favoriteCity',
+          'user.role AS role',
+          'user.blocked AS blocked',
           'COUNT(arts.id) AS arts',
         ])
-        .where(
-          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname",
-          {
-            fullname: '%' + fullname.split(' ').join('% %') + '%',
-          },
-        )
+        .where(query, {
+          fullname: '%' + fullname.split(' ').join('% %') + '%',
+        })
         .groupBy('user.id')
         .limit(paginationOptions.limit)
         .offset(paginationOptions.limit * (paginationOptions.page - 1))
         .getRawMany();
       return result;
     } catch (err) {
-      console.log(err);
       throw new NotFoundException('User not found');
     }
   }

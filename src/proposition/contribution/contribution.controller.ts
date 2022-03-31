@@ -141,7 +141,6 @@ export class ContributionController {
     @Body() validatePropDto: ValidatePropDto,
     @Req() request: any,
   ) {
-    console.log(validatePropDto);
     return this.contributionService.deleteManyContribution(
       validatePropDto.propositions,
       request.user,
