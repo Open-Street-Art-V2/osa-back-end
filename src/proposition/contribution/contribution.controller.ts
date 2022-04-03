@@ -49,7 +49,7 @@ export class ContributionController {
   // Get user contribution
 
   @Get('user/:id')
-  @JwtAuth(Role.USER)
+  @JwtAuth(Role.USER, Role.ADMIN)
   async getUserContribution(
     @Param('id') id: number,
     @Query() paginationDto: PaginationDto,
