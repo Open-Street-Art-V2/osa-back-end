@@ -1,5 +1,7 @@
 import { Art } from 'src/art/art.entity';
 import { Role } from 'src/auth/roles/role.enum';
+import { FavoriteArt } from 'src/favorites/entities/favorite-art.entity';
+// import { FavoriteArtist } from 'src/favorites/entities/favorite-artist.entity';
 import { Proposition } from 'src/proposition/entities/proposition.entity';
 import {
   Column,
@@ -45,6 +47,14 @@ export class User {
 
   @OneToMany(() => Proposition, (proposition) => proposition.user)
   propositions?: Proposition[];
+
+  @OneToMany(() => FavoriteArt, (favoriteArt) => favoriteArt.user)
+  favoriteArts?: FavoriteArt[];
+
+  // @OneToMany(() => FavoriteArtist, (favoriteArtist) => favoriteArtist.artist, {
+  //   eager: false,
+  // })
+  // favoriteArtists: FavoriteArtist[];
 
   @CreateDateColumn({
     type: 'timestamp',
