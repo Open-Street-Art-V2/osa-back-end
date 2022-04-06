@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +17,7 @@ import { PaginationDto } from 'src/proposition/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
   ) {}
@@ -155,6 +157,7 @@ export class UsersService {
       return result;
     } catch (err) {
       if (err?.code === 'ER_DUP_ENTRY') {
+        this.logger.error('DUPLICATE ENTRY FOR USER IN USERS TABLE', err.stack);
         throw new HttpException(
           'User with that email already exists',
           HttpStatus.CONFLICT,

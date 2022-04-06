@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +24,7 @@ import {
 
 @Injectable()
 export class ArtService {
+  private readonly logger = new Logger(ArtService.name);
   constructor(
     @Inject(PictureService) private pictureService: PictureService,
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
@@ -50,11 +52,16 @@ export class ArtService {
     } catch (err) {
       this.pictureService.removePicturesFromFileSystem(filenames);
       switch (err.code) {
-        case 'ER_DUP_ENTRY':
+        case 'ER_DUP_ENTRY': {
+          this.logger.error(
+            'DUPLICATE ENTRY FOR ART IN FAVORITE ARTS TABLE',
+            err.stack,
+          );
           throw new HttpException(
             'Art with same title already exists',
             HttpStatus.CONFLICT,
           );
+        }
         default:
           throw new HttpException(
             err.message,
@@ -253,11 +260,16 @@ export class ArtService {
     } catch (err) {
       this.pictureService.removePicturesFromFileSystem(filenames);
       switch (err.code) {
-        case 'ER_DUP_ENTRY':
+        case 'ER_DUP_ENTRY': {
+          this.logger.error(
+            'DUPLICATE ENTRY FOR ART IN FAVORITE ARTS TABLE',
+            err.stack,
+          );
           throw new HttpException(
             'Art with same title already exists',
             HttpStatus.CONFLICT,
           );
+        }
         default:
           throw new HttpException(
             'Something went wrong ici',

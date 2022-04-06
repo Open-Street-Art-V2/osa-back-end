@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PropositionModule } from './proposition/proposition.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     AuthModule,
     PropositionModule,
     FavoritesModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

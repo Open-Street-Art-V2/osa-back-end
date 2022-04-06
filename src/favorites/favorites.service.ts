@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Art } from 'src/art/art.entity';
 import { User } from 'src/users/user.entity';
@@ -11,6 +11,7 @@ import { FavoriteArtist } from './entities/favorite-artist.entity';
 
 @Injectable()
 export class FavoritesService {
+  private readonly logger = new Logger(FavoritesService.name);
   constructor(
     @InjectRepository(FavoriteArt)
     private favoriteArtRepo: Repository<FavoriteArt>,
@@ -52,6 +53,10 @@ export class FavoritesService {
       await this.favoriteArtRepo.insert(favoriteArt);
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') {
+        this.logger.error(
+          'DUPLICATE ENTRY FOR ART IN FAVORITE ARTS TABLE',
+          err.stack,
+        );
         throw new HttpException(
           'Art already in favorites',
           HttpStatus.CONFLICT,
@@ -180,6 +185,10 @@ export class FavoritesService {
       await this.favoriteArtistRepo.insert(favoriteArtist);
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') {
+        this.logger.error(
+          'DUPLICATE ENTRY FOR USER-FAVORITE_USER (Composite key) IN FAVORITE USERS TABLE',
+          err.stack,
+        );
         throw new HttpException(
           'User already in favorites',
           HttpStatus.CONFLICT,
