@@ -31,9 +31,9 @@ export class FavoritesService {
         HttpStatus.NOT_FOUND,
       );
     }
-    if (art.user.id === userId)
+    if (!art)
       throw new HttpException(
-        'Cannot add your own art to your favorites',
+        'Art was not found or you own the art',
         HttpStatus.FORBIDDEN,
       );
     try {
@@ -79,6 +79,21 @@ export class FavoritesService {
     return result.map((item) => {
       return { createdAt: item.created_at, art: item.art };
     });
+  }
+
+  async favoriteArtExist(id: number, userId: number) {
+    try {
+      const result = await this.favoriteArtRepo.findOne({
+        where: { art: id, user: userId },
+      });
+      if (result) return { statusCode: 200, exist: true };
+      return { statusCode: 200, exist: false };
+    } catch (err) {
+      throw new HttpException(
+        'Something went wrong when looking for art',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async removeArt(id: number, userId: number) {
@@ -273,5 +288,20 @@ export class FavoritesService {
         },
       };
     });
+  }
+
+  async favoriteArtistExist(id: number, userId: number) {
+    try {
+      const result = await this.favoriteArtistRepo.findOne({
+        where: { artist: id, user: userId },
+      });
+      if (result) return { statusCode: 200, exist: true };
+      return { statusCode: 200, exist: false };
+    } catch (err) {
+      throw new HttpException(
+        'Something went wrong when looking for user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
