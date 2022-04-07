@@ -41,6 +41,9 @@ export class AuthService {
         password: hashedPassword,
       });
       createdUser.password = undefined;
+      this.logger.log(
+        `Account created with following email : ${createdUser.email}`,
+      );
       return createdUser;
     } catch (error) {
       if (error?.code === 'ER_DUP_ENTRY') {

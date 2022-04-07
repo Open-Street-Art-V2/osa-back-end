@@ -10,16 +10,16 @@ import { ConfigService } from '@nestjs/config';
 export class CustomLogger extends ConsoleLogger implements LoggerService {
   fs;
   path: string;
-  constructor(configService: ConfigService) {
+  constructor(private configService: ConfigService) {
     super();
     this.fs = require('fs');
-    this.path = configService.get('LOG_FILE_PATH');
+    this.path = this.configService.get('LOG_FILE_PATH');
   }
   log(message: any, ...optionalParams: any[]) {
     super.log(message, ...optionalParams);
     this.fs.writeFile(
-      '/home/tarek/serverLogger.log',
-      'LOG' + '[' + optionalParams[0] + '] ' + message + '\n',
+      this.path,
+      'LOG ' + '[' + optionalParams[0] + '] ' + message + '\n',
       { flag: 'a+' },
       (err) => {
         if (err) {
@@ -32,7 +32,7 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
   error(message: any, ...optionalParams: any[]) {
     super.error(message, ...optionalParams);
     this.fs.writeFile(
-      '/home/tarek/serverLogger.log',
+      this.path,
       'ERROR ' + '[' + optionalParams[1] + '] ' + message + '\n',
       { flag: 'a+' },
       (err) => {
