@@ -20,6 +20,10 @@ export class UsersService {
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
   ) {}
 
+  public async findOne(email: string) {
+    return await this.usersRepository.findOne({ email });
+  }
+
   public async profile(userId: number) {
     const result = await this.usersRepository.findOne(userId, {
       where: { blocked: false },

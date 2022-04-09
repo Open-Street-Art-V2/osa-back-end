@@ -7,9 +7,13 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthController } from './auth.controller';
+import { ForgotPwdService } from './forgotpwd/forgotpwd.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ForgotPwd } from './forgotpwd/forgotpwd.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([ForgotPwd]),
     UsersModule,
     PassportModule,
     JwtModule.registerAsync({
@@ -23,7 +27,7 @@ import { AuthController } from './auth.controller';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, ForgotPwdService],
   controllers: [AuthController],
 })
 export class AuthModule {}
