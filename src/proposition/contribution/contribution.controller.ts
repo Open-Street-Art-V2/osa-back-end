@@ -31,7 +31,6 @@ export class ContributionController {
   constructor(private readonly contributionService: ContributionService) {}
 
   @Get()
-  @JwtAuth(Role.ADMIN, Role.USER)
   async getContribution(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
       return this.contributionService.findAllContribution({
