@@ -7,7 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PropositionModule } from './proposition/proposition.module';
 import { FavoritesModule } from './favorites/favorites.module';
-import { LoggerModule } from './logger/logger.module';
+import { TrophieModule } from './trophie/trophie.module';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { LoggerModule } from './logger/logger.module';
     AuthModule,
     PropositionModule,
     FavoritesModule,
-    LoggerModule,
+    TrophieModule,
   ],
   controllers: [AppController],
   providers: [AppService],

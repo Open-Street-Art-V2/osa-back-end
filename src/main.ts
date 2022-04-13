@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { CustomLogger } from './logger/custom-logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,7 +15,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.useLogger(app.get(CustomLogger));
+
   const config = new DocumentBuilder()
     .setTitle('OpenStreetArt API')
     .setVersion('0.5')
