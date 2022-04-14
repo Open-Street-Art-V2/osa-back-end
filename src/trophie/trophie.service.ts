@@ -2,22 +2,39 @@ import { Injectable } from '@nestjs/common';
 import { CreateTrophieDto } from './dto/create-trophie.dto';
 import { UpdateTrophieDto } from './dto/update-trophie.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
   IPaginationOptions,
   paginate,
   Pagination,
 } from 'nestjs-typeorm-paginate';
 import { Trophie } from './entities/trophie.entity';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class TrophieService {
   constructor(
-    // @InjectRepository(User)
-    // private userRepository: Repository<User>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @InjectRepository(Trophie)
     private trophieRepository: Repository<Trophie>,
   ) {}
+
+  async insertTrophieToUser(userId, trophieName) {
+    const trophie = await this.trophieRepository.findOne({
+      where: {
+        name: trophieName,
+      },
+    });
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+      relations: ['trophies'],
+    });
+    user.trophies.push(trophie);
+    return await this.userRepository.save(user);
+  }
 
   async findAllTrophies(
     options: IPaginationOptions,
@@ -26,11 +43,15 @@ export class TrophieService {
     options.limit =
       options.limit > 20 || options.limit <= 0 ? 10 : options.limit;
     options.page = options.page <= 0 ? 1 : options.page;
+    const user = await this.userRepository.findOne({
+      relations: ['trophies'],
+      where: { id: userId },
+    });
+    let trophies = user.trophies.map((trophie) => trophie.id);
+    // console.log(trophies);
+    if (trophies.length === 0) trophies = [0];
     const result = await paginate<Trophie>(this.trophieRepository, options, {
-      join: { alias: 'users' },
-      where: (qb) => {
-        qb.where('categories.id = :id', { id: userId });
-      },
+      where: { id: In(trophies) },
     });
     return result;
   }
@@ -40,7 +61,7 @@ export class TrophieService {
   }
 
   findAll() {
-    return `This action returns all trophie`;
+    return this.trophieRepository.find();
   }
 
   findOne(id: number) {

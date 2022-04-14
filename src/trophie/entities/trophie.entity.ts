@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { User } from 'src/users/user.entity';
+import {
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  // ManyToMany,
+  // JoinTable,
+} from 'typeorm';
+// import { User } from 'src/users/user.entity';
 
 @Entity()
 export class Trophie {
@@ -15,9 +22,13 @@ export class Trophie {
   @Column()
   nbProposal: number;
 
-  @Column()
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
   CreationDate: Date;
 
-  @ManyToMany((type) => User, (user) => user.trophies)
-  users: User[];
+  // @ManyToMany((type) => User)
+  // @JoinTable()
+  // users: User[];
 }

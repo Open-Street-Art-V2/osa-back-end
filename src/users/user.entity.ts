@@ -13,6 +13,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
+  JoinTable,
 } from 'typeorm';
 
 @Entity()
@@ -64,7 +65,8 @@ export class User {
   })
   users: FavoriteArtist[];
 
-  @ManyToMany((type) => Trophie, (trophie) => trophie.users)
+  @ManyToMany((type) => Trophie)
+  @JoinTable()
   trophies: Trophie[];
 
   @CreateDateColumn({
