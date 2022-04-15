@@ -4,14 +4,19 @@ import { User } from 'src/users/user.entity';
 import {
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
+@Index(['art', 'user'], { unique: true })
 export class FavoriteArt {
-  @OneToOne((type) => Art, { primary: true, eager: true })
+  @PrimaryGeneratedColumn()
+  id?: number;
+
+  @ManyToOne((type) => Art, { primary: true, eager: true })
   @JoinColumn()
   art: Art;
 
