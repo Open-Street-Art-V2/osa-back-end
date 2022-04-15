@@ -48,7 +48,6 @@ export class ContributionController {
   // Get user contribution
 
   @Get('user/:id')
-  @JwtAuth(Role.USER, Role.ADMIN)
   async getUserContribution(
     @Param('id') id: number,
     @Query() paginationDto: PaginationDto,
@@ -68,7 +67,6 @@ export class ContributionController {
 
   // Get contribution by Id
   @Get(':id')
-  @JwtAuth(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.contributionService.findOne(+id);
   }
