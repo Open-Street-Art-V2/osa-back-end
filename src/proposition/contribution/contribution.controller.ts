@@ -31,7 +31,6 @@ export class ContributionController {
   constructor(private readonly contributionService: ContributionService) {}
 
   @Get()
-  @JwtAuth(Role.ADMIN)
   async getContribution(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
       return this.contributionService.findAllContribution({
@@ -46,9 +45,28 @@ export class ContributionController {
     }
   }
 
-  // Get proposition by Id
+  // Get user contribution
+
+  @Get('user/:id')
+  async getUserContribution(
+    @Param('id') id: number,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return this.contributionService.getUserContribution(id, {
+        limit: paginationDto.limit,
+        page: paginationDto.page,
+      });
+    } else {
+      return this.contributionService.getUserContribution(id, {
+        limit: 10,
+        page: 1,
+      });
+    }
+  }
+
+  // Get contribution by Id
   @Get(':id')
-  @JwtAuth(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.contributionService.findOne(+id);
   }
@@ -59,7 +77,7 @@ export class ContributionController {
   @Post('add/:id')
   @UseFilters(CreateArtBadRequestFilter)
   @UseInterceptors(FilesInterceptor('files', 3))
-  @JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.USER)
   async contribution(
     @Param('id') id: number,
     @UploadedFiles() files: Array<Express.Multer.File>,
@@ -120,7 +138,6 @@ export class ContributionController {
     @Body() validatePropDto: ValidatePropDto,
     @Req() request: any,
   ) {
-    console.log(validatePropDto);
     return this.contributionService.deleteManyContribution(
       validatePropDto.propositions,
       request.user,

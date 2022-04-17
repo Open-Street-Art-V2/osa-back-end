@@ -6,7 +6,6 @@ export default function fileName(
   file: Express.Multer.File,
   callback,
 ) {
-  console.log(req.body);
   const filename = file.originalname.split('.')[0].slice(0, 4);
   const extension = extname(file.originalname);
   file.filename = filename + new Date().getTime() + extension;

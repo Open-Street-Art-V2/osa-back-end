@@ -34,9 +34,19 @@ export class UsersController {
   }
 
   @Get('profile/:id')
-  @JwtAuth(Role.ADMIN, Role.USER)
   async user(@Param('id', ParseIntPipe) id: number) {
-    const profile = await this.usersService.userProfile(id);
+    const profile = await this.usersService.userProfile(id, null);
+    return {
+      statusCode: 200,
+      profile,
+    };
+  }
+
+  // Can see blocked users
+  @Get('admin-profile/:id')
+  @JwtAuth(Role.ADMIN)
+  async userProfileForAdmin(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    const profile = await this.usersService.userProfile(id, req.user);
     return {
       statusCode: 200,
       profile,
@@ -47,18 +57,54 @@ export class UsersController {
   async getUsersByFullname(
     @Body() body: { fullname: string },
     @Query() paginationDto: PaginationDto,
+    @Req() req,
   ) {
     let result = [];
     if (Object.keys(paginationDto).length === 2) {
       result = await this.usersService.getUsersByFullname(
         body.fullname,
         paginationDto,
+        req.user,
       );
     } else {
-      result = await this.usersService.getUsersByFullname(body.fullname, {
-        limit: 10,
-        page: 1,
-      });
+      result = await this.usersService.getUsersByFullname(
+        body.fullname,
+        {
+          limit: 10,
+          page: 1,
+        },
+        req.user,
+      );
+    }
+    return {
+      statusCode: 200,
+      results: result,
+    };
+  }
+
+  @Post('admin-search')
+  @JwtAuth(Role.ADMIN)
+  async getUsersByFullnameAdmin(
+    @Body() body: { fullname: string },
+    @Query() paginationDto: PaginationDto,
+    @Req() req,
+  ) {
+    let result = [];
+    if (Object.keys(paginationDto).length === 2) {
+      result = await this.usersService.getUsersByFullname(
+        body.fullname,
+        paginationDto,
+        req.user,
+      );
+    } else {
+      result = await this.usersService.getUsersByFullname(
+        body.fullname,
+        {
+          limit: 10,
+          page: 1,
+        },
+        req.user,
+      );
     }
     return {
       statusCode: 200,
@@ -83,7 +129,8 @@ export class UsersController {
     @Body() updateUserProfileDTO: UpdateUserProfileDTO,
     @Req() req,
   ) {
-    await this.usersService.editProfile(updateUserProfileDTO, req.user.id);
+    if (Object.keys(updateUserProfileDTO).length !== 0)
+      await this.usersService.editProfile(updateUserProfileDTO, req.user.id);
     return {
       statusCode: 200,
       message: 'Profile edited successfully!',

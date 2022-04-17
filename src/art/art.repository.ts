@@ -8,7 +8,6 @@ import { User } from 'src/users/user.entity';
 export class ArtRepository extends Repository<Art> {
   public async createArt(createArtDto: CreateArtDto, user: User): Promise<Art> {
     const art: Art = { ...createArtDto, user };
-    console.log(art);
     return this.save(art);
   }
 
@@ -23,7 +22,6 @@ export class ArtRepository extends Repository<Art> {
     art.longitude = editArt.longitude;
     art.title = editArt.title;
     const toEdit: Art = { ...art, ...updateArtDto };
-    console.log(toEdit);
     return this.save(toEdit);
   }
 }

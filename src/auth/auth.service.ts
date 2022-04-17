@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/user.entity';
 import { UsersService } from '../users/users.service';
@@ -11,6 +11,7 @@ import { ForgotPwd } from './forgotpwd/forgotpwd.entity';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -46,9 +47,16 @@ export class AuthService {
         password: hashedPassword,
       });
       createdUser.password = undefined;
+      this.logger.log(
+        `Account created with following email : ${createdUser.email}`,
+      );
       return createdUser;
     } catch (error) {
       if (error?.code === 'ER_DUP_ENTRY') {
+        this.logger.error(
+          'DUPLICATE ENTRY FOR USER IN USERS TABLE (user already exists)',
+          error.stack,
+        );
         throw new HttpException(
           'User with that email already exists',
           HttpStatus.CONFLICT,

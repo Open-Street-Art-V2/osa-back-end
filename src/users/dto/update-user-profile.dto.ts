@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsAlpha,
   IsDate,
   IsEmail,
   IsNotEmpty,
   IsOptional,
+  IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -16,14 +18,16 @@ export class UpdateUserProfileDTO {
   email?: string;
 
   @ApiProperty()
-  @IsAlpha()
+  @IsNotEmpty()
+  @IsString()
   @MinLength(2)
   @MaxLength(25)
   @IsOptional()
   name?: string;
 
   @ApiProperty()
-  @IsAlpha()
+  @IsNotEmpty()
+  @IsString()
   @MinLength(2)
   @MaxLength(25)
   @IsOptional()
@@ -32,6 +36,7 @@ export class UpdateUserProfileDTO {
   @ApiProperty()
   @MinLength(8)
   @MaxLength(25)
+  @IsOptional()
   password?: string;
 
   @ApiProperty()
@@ -41,6 +46,7 @@ export class UpdateUserProfileDTO {
   favoriteCity?: string;
 
   @ApiProperty()
+  @Type(() => Date)
   @IsDate()
   @IsNotEmpty()
   @IsOptional()

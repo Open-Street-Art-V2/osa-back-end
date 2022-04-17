@@ -6,6 +6,9 @@ import { ArtModule } from './art/art.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PropositionModule } from './proposition/proposition.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { TrophieModule } from './trophie/trophie.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { PropositionModule } from './proposition/proposition.module';
     ArtModule,
     AuthModule,
     PropositionModule,
+    FavoritesModule,
+    TrophieModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

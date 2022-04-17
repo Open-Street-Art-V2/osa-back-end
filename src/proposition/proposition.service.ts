@@ -52,7 +52,6 @@ export class PropositionService {
       };
       const proposition = await this.propRepository.save(prop);
       if (filenames) {
-        console.log(filenames);
         await this.propPicService.createPictures(proposition, filenames);
       }
       return proposition;
@@ -111,6 +110,19 @@ export class PropositionService {
     return result;
   }
 
+  async paginateUserPropositions(
+    options: IPaginationOptions,
+    userId: number,
+  ): Promise<Pagination<Proposition>> {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 20 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    const result = await paginate<Proposition>(this.propRepository, options, {
+      where: { art: IsNull(), user: userId },
+    });
+    return result;
+  }
+
   async findOne(id: number) {
     try {
       const prop: Proposition = await this.propRepository.findOne(id);
@@ -122,13 +134,9 @@ export class PropositionService {
     }
   }
 
-  async findUserProposition(id: number, userId: number) {
+  async findUserProposition(id: number) {
     try {
-      const prop: Proposition = await this.propRepository.findOne(id, {
-        where: {
-          user: userId,
-        },
-      });
+      const prop: Proposition = await this.propRepository.findOne(id);
       if (!prop)
         throw new NotFoundException(`Proposition with id:${id} was not found`);
       return prop;
@@ -171,12 +179,10 @@ export class PropositionService {
         );
       }
       const { index, ...fieldsToUpdate } = updatePropositionDto;
-      const result = await this.propRepository.update(
+      await this.propRepository.update(
         { id: id },
         { ...fieldsToUpdate },
       );
-      console.log(result);
-      console.log(fieldsToUpdate);
       if (filenames) {
         switch (index) {
           case 1: {
@@ -295,7 +301,6 @@ export class PropositionService {
 
   async validate(props: number[]) {
     let result = { validated: [], notFound: [] };
-    console.log('hahaha');
     try {
       await Promise.all(
         props.map(async (item) => {

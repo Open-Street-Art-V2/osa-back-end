@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,12 +17,18 @@ import { PaginationDto } from 'src/proposition/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
   ) {}
 
+
   public async findOneEmail(email: string) {
     return await this.usersRepository.findOne({ email });
+  }
+  public async findOne(userId: number) {
+    return this.usersRepository.findOne(userId);
+
   }
 
   public async profile(userId: number) {
@@ -40,16 +47,21 @@ export class UsersService {
     };
   }
 
-  public async userProfile(userId: number) {
-    const result = await this.usersRepository.findOne(userId, {
-      where: { blocked: false },
-    });
+  public async userProfile(userId: number, authUser) {
+    let result;
+    if (authUser) {
+      result = await this.usersRepository.findOne(userId);
+    } else {
+      result = await this.usersRepository.findOne(userId, {
+        where: { blocked: false },
+      });
+    }
     if (!result)
       throw new HttpException(
         `User with id:${userId} not found`,
         HttpStatus.NOT_FOUND,
       );
-    const { id, email, birthDate, role, created_at, arts, ...user } = result;
+    const { id, email, birthDate, created_at, arts, ...user } = result;
     return {
       ...user,
       arts: arts.length,
@@ -71,7 +83,16 @@ export class UsersService {
   public async getUsersByFullname(
     fullname: string,
     paginationOptions: PaginationDto,
+    user,
   ) {
+    let query = '';
+    if (user) {
+      query =
+        "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname";
+    } else {
+      query =
+        "(concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname) AND blocked=0";
+    }
     paginationOptions.limit =
       paginationOptions.limit > 20 || paginationOptions.limit <= 0
         ? 20
@@ -82,24 +103,24 @@ export class UsersService {
       const result = await this.usersRepository
         .createQueryBuilder('user')
         .leftJoin('user.arts', 'arts')
-        .select('user.id', 'id')
-        .addSelect('user.firstname', 'firstname')
-        .addSelect('user.name', 'name')
-        .addSelect('user.favoriteCity', 'favoriteCity')
-        .addSelect('COUNT(arts.id)', 'arts')
-        .where(
-          "concat_ws(' ',name,firstname) LIKE :fullname OR concat_ws(' ',firstname,name) LIKE :fullname",
-          {
-            fullname: '%' + fullname.split(' ').join('% %') + '%',
-          },
-        )
+        .select([
+          'user.id AS id',
+          'user.firstname AS firstname',
+          'user.name AS name',
+          'user.favoriteCity AS favoriteCity',
+          'user.role AS role',
+          'user.blocked AS blocked',
+          'COUNT(arts.id) AS arts',
+        ])
+        .where(query, {
+          fullname: '%' + fullname.split(' ').join('% %') + '%',
+        })
         .groupBy('user.id')
         .limit(paginationOptions.limit)
         .offset(paginationOptions.limit * (paginationOptions.page - 1))
         .getRawMany();
       return result;
     } catch (err) {
-      console.log(err);
       throw new NotFoundException('User not found');
     }
   }
@@ -131,17 +152,31 @@ export class UsersService {
     updateUserProfileDTO: UpdateUserProfileDTO,
     id: number,
   ) {
-    if (updateUserProfileDTO.password) {
-      updateUserProfileDTO.password = await bcrypt.hash(
-        updateUserProfileDTO.password,
-        10,
+    try {
+      if (updateUserProfileDTO.password) {
+        updateUserProfileDTO.password = await bcrypt.hash(
+          updateUserProfileDTO.password,
+          10,
+        );
+      }
+      const result = await this.usersRepository.update(
+        { id: id },
+        { ...updateUserProfileDTO },
+      );
+      return result;
+    } catch (err) {
+      if (err?.code === 'ER_DUP_ENTRY') {
+        this.logger.error('DUPLICATE ENTRY FOR USER IN USERS TABLE', err.stack);
+        throw new HttpException(
+          'User with that email already exists',
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    const result = await this.usersRepository.update(
-      { id: id },
-      { ...updateUserProfileDTO },
-    );
-    return result;
   }
 
   public async block(id: number, blocked: boolean) {

@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +24,7 @@ import {
 
 @Injectable()
 export class ArtService {
+  private readonly logger = new Logger(ArtService.name);
   constructor(
     @Inject(PictureService) private pictureService: PictureService,
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
@@ -50,11 +52,16 @@ export class ArtService {
     } catch (err) {
       this.pictureService.removePicturesFromFileSystem(filenames);
       switch (err.code) {
-        case 'ER_DUP_ENTRY':
+        case 'ER_DUP_ENTRY': {
+          this.logger.error(
+            'DUPLICATE ENTRY FOR ART IN FAVORITE ARTS TABLE',
+            err.stack,
+          );
           throw new HttpException(
             'Art with same title already exists',
             HttpStatus.CONFLICT,
           );
+        }
         default:
           throw new HttpException(
             err.message,
@@ -119,6 +126,24 @@ export class ArtService {
       throw new NotFoundException();
     }*/
 
+    return result;
+  }
+
+  public async getByTitleOrCityOrArtist(
+    search: string,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Art>> {
+    options.limit =
+      options.limit <= 0 || options.limit > 20 ? 10 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+
+    const result = await paginate<Art>(this.artRepository, options, {
+      where: [
+        { title: Like(`${search}%`) },
+        { city: Like(`${search}%`) },
+        { artist: Like(`${search}%`) },
+      ],
+    });
     return result;
   }
 
@@ -235,11 +260,16 @@ export class ArtService {
     } catch (err) {
       this.pictureService.removePicturesFromFileSystem(filenames);
       switch (err.code) {
-        case 'ER_DUP_ENTRY':
+        case 'ER_DUP_ENTRY': {
+          this.logger.error(
+            'DUPLICATE ENTRY FOR ART IN FAVORITE ARTS TABLE',
+            err.stack,
+          );
           throw new HttpException(
             'Art with same title already exists',
             HttpStatus.CONFLICT,
           );
+        }
         default:
           throw new HttpException(
             'Something went wrong ici',
