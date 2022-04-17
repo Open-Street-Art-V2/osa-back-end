@@ -4,7 +4,7 @@ import { User } from 'src/users/user.entity';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDTO } from 'src/users/dto/create-user.dto';
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 import { ForgotPwdService } from 'src/auth/forgotpwd/forgotpwd.service';
 import { ForgotPwd } from './forgotpwd/forgotpwd.entity';
 // require('dotenv').process.env();
@@ -22,7 +22,6 @@ export class AuthService {
     const user = await this.usersService.getUserByLogin(email);
     const isPasswordMatching = await bcrypt.compare(pwd, user.password);
     if (isPasswordMatching) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-consts
       const { password, ...validatedUser } = user;
       return validatedUser;
     }

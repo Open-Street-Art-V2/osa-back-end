@@ -76,7 +76,7 @@ export class AuthController {
           await this.authService.getForgottenPasswordModel(
             resetPassword.newPasswordToken,
           );
-        const user = await this.userService.findOne(
+        const user = await this.userService.findOneEmail(
           forgottenPasswordModel.email,
         );
         await this.userService.changePassword(

@@ -31,6 +31,10 @@ export class UsersService {
 
   }
 
+  public async findOne(userId: number) {
+    return await this.usersRepository.findOne(userId);
+  }
+
   public async profile(userId: number) {
     const result = await this.usersRepository.findOne(userId, {
       where: { blocked: false },
