@@ -17,6 +17,7 @@ async function bootstrap() {
     }),
   );
   app.useLogger(app.get(CustomLogger));
+
   const config = new DocumentBuilder()
     .setTitle('OpenStreetArt API')
     .setVersion('0.5')

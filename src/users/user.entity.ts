@@ -4,13 +4,16 @@ import { FavoriteArt } from 'src/favorites/entities/favorite-art.entity';
 import { FavoriteArtist } from 'src/favorites/entities/favorite-artist.entity';
 // import { FavoriteArtist } from 'src/favorites/entities/favorite-artist.entity';
 import { Proposition } from 'src/proposition/entities/proposition.entity';
+import { Trophie } from 'src/trophie/entities/trophie.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
+  JoinTable,
 } from 'typeorm';
 
 @Entity()
@@ -61,6 +64,10 @@ export class User {
     eager: false,
   })
   users: FavoriteArtist[];
+
+  @ManyToMany((type) => Trophie)
+  @JoinTable()
+  trophies: Trophie[];
 
   @CreateDateColumn({
     type: 'timestamp',
