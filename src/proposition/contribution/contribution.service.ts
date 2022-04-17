@@ -46,6 +46,18 @@ export class ContributionService {
     return result;
   }
 
+  // Get user contribution
+
+  async getUserContribution(userId: number, options: IPaginationOptions) {
+    options.limit =
+      options.limit > 20 || options.limit <= 0 ? 10 : options.limit;
+    options.page = options.page <= 0 ? 1 : options.page;
+    const result = await paginate<Proposition>(this.propRepository, options, {
+      where: { user: userId },
+    });
+    return result;
+  }
+
   // Add contribution
 
   async contribution(

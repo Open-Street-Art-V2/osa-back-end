@@ -30,7 +30,7 @@ import { ValidatePropDto } from './dto/validate-proposition.dto';
 import { PropositionService } from './proposition.service';
 
 @Controller('proposition')
-@ApiTags("Proposition")
+@ApiTags('Proposition')
 export class PropositionController {
   constructor(private readonly propositionService: PropositionService) {}
 
@@ -67,7 +67,7 @@ export class PropositionController {
 
   // Get all propostion
   @Get()
-  @JwtAuth(Role.ADMIN)
+  @JwtAuth(Role.ADMIN, Role.USER)
   async paginate(@Query() paginationDto: PaginationDto) {
     if (Object.keys(paginationDto).length === 2) {
       return this.propositionService.paginate({
@@ -79,6 +79,31 @@ export class PropositionController {
         limit: 10,
         page: 1,
       });
+    }
+  }
+
+  @Get('user/all/:id')
+  @JwtAuth(Role.ADMIN, Role.USER)
+  async paginateUserPropositions(
+    @Query() paginationDto: PaginationDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    if (Object.keys(paginationDto).length === 2) {
+      return this.propositionService.paginateUserPropositions(
+        {
+          limit: paginationDto.limit,
+          page: paginationDto.page,
+        },
+        id,
+      );
+    } else {
+      return this.propositionService.paginateUserPropositions(
+        {
+          limit: 10,
+          page: 1,
+        },
+        id,
+      );
     }
   }
 
@@ -116,8 +141,8 @@ export class PropositionController {
 
   @Get('user/:id')
   @JwtAuth(Role.USER)
-  findUserProposition(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    return this.propositionService.findUserProposition(+id, req.user.id);
+  findUserProposition(@Param('id', ParseIntPipe) id: number) {
+    return this.propositionService.findUserProposition(+id);
   }
 
   // update proposition

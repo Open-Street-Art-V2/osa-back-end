@@ -1,13 +1,19 @@
 import { Art } from 'src/art/art.entity';
 import { Role } from 'src/auth/roles/role.enum';
+import { FavoriteArt } from 'src/favorites/entities/favorite-art.entity';
+import { FavoriteArtist } from 'src/favorites/entities/favorite-artist.entity';
+// import { FavoriteArtist } from 'src/favorites/entities/favorite-artist.entity';
 import { Proposition } from 'src/proposition/entities/proposition.entity';
+import { Trophie } from 'src/trophie/entities/trophie.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
+  JoinTable,
 } from 'typeorm';
 
 @Entity()
@@ -45,6 +51,23 @@ export class User {
 
   @OneToMany(() => Proposition, (proposition) => proposition.user)
   propositions?: Proposition[];
+
+  @OneToMany(() => FavoriteArt, (favoriteArt) => favoriteArt.user)
+  favoriteArts?: FavoriteArt[];
+
+  @OneToMany(() => FavoriteArtist, (favoriteArtist) => favoriteArtist.artist, {
+    eager: false,
+  })
+  favoriteArtists: FavoriteArtist[];
+
+  @OneToMany(() => FavoriteArtist, (favoriteArtist) => favoriteArtist.user, {
+    eager: false,
+  })
+  users: FavoriteArtist[];
+
+  @ManyToMany((type) => Trophie)
+  @JoinTable()
+  trophies: Trophie[];
 
   @CreateDateColumn({
     type: 'timestamp',
