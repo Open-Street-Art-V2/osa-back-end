@@ -7,6 +7,7 @@ import {
   Body,
   Res,
   Get,
+  Param,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -16,11 +17,18 @@ import { AuthService } from './auth.service';
 import { JwtAuth } from './decorators/auth.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Role } from './roles/role.enum';
+import { ResetPasswordDto } from './forgotpwd/reset-password.dto';
+import { UsersService } from 'src/users/users.service';
+import { ForgotPwdService } from './forgotpwd/forgotpwd.service';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+    private readonly forgotpwdService: ForgotPwdService,
+  ) {}
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
@@ -39,6 +47,53 @@ export class AuthController {
   @Post('register')
   async register(@Body() createUserDto: CreateUserDTO) {
     return this.authService.register(createUserDto);
+  }
+
+  @Get('forgot-password/:email')
+  async sendEmailForgotPassword(@Param() params) {
+    try {
+      const isEmailSent = await this.authService.sendEmailForgotPassword(
+        params.email,
+      );
+      console.log(isEmailSent);
+      if (isEmailSent) {
+        return 'email sent'; //email resent
+      } else {
+        return 'email not sent'; // email not resent
+      }
+    } catch (error) {
+      return error;
+    }
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  public async setNewPassord(@Body() resetPassword: ResetPasswordDto) {
+    try {
+      var isNewPasswordChanged: boolean = false;
+      if (resetPassword.newPasswordToken) {
+        var forgottenPasswordModel =
+          await this.authService.getForgottenPasswordModel(
+            resetPassword.newPasswordToken,
+          );
+        const user = await this.userService.findOne(
+          forgottenPasswordModel.email,
+        );
+        await this.userService.changePassword(
+          { password: resetPassword.newPassword },
+          user.id,
+        );
+        await this.forgotpwdService.remove(forgottenPasswordModel.email);
+      } else {
+        return 'RESET_PASSWORD.CHANGE_PASSWORD_ERROR';
+      }
+      return {
+        msg: 'RESET_PASSWORD.PASSWORD_CHANGED',
+        isNewPasswordChanged,
+      };
+    } catch (error) {
+      return { msg: 'RESET_PASSWORD.CHANGE_PASSWORD_ERROR', error };
+    }
   }
 
   @Get('test')
