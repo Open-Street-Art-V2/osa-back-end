@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { PropositionModule } from './proposition/proposition.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { TrophieModule } from './trophie/trophie.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TrophieModule } from './trophie/trophie.module';
     PropositionModule,
     FavoritesModule,
     TrophieModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
