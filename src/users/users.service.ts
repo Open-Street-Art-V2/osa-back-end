@@ -22,13 +22,8 @@ export class UsersService {
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
   ) {}
 
-
   public async findOneEmail(email: string) {
     return await this.usersRepository.findOne({ email });
-  }
-  public async findOne(userId: number) {
-    return this.usersRepository.findOne(userId);
-
   }
 
   public async findOne(userId: number) {
