@@ -1,0 +1,62 @@
+<html>
+	<head>
+		<style>
+			body {
+				font-family: Arial, Helvetica, sans-serif;
+			}
+			#main {
+				margin-top: 25px;
+				margin-bottom: 25px;
+				margin-left: 20px;
+				margin-right: 20px;
+			}
+			p {
+				margin: 4px;
+			}
+			h1, h3 {
+				color: #7dccab;
+			}
+			h4 {
+				margin: 0px;
+			}
+			img {
+				float: right;
+				width: 200px;
+				padding-top: 12px;
+				padding-right: 20px;
+			}
+			li {
+				margin-top: 30px;
+				margin-bottom: 50px;
+			}
+			#logo {
+				width: 60px;
+				position: absolute;
+				right: 0px;
+				top: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="main">
+			<img id="logo" src="{{this.logo}}" />
+			<h1>Open Street Art</h1>
+			<h2>Liste des oeuvres de {{this.city}} : </h2>
+			<div>
+				<ul>
+                    {{#each arts}}
+					<li>
+						<!-- <img src="{{this.picture}}"/> -->
+						<h3>Titre : {{this.title}} </h3>
+						<p>Artiste : {{this.artist}}</p>
+                        <p>Description : {{this.description}}</p>
+                        <p>Latitude : {{this.latitude}}</p>
+                        <p>Longitude : {{this.longitude}}</p>
+                        <p>Adresse : {{this.address}}</p>
+					</li>
+                    {{/each}}
+				</ul>
+			</div>
+		</div>
+	</body>
+</html>

@@ -9,6 +9,7 @@ import { PropositionModule } from './proposition/proposition.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { TrophieModule } from './trophie/trophie.module';
 import { LoggerModule } from './logger/logger.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { LoggerModule } from './logger/logger.module';
     FavoritesModule,
     TrophieModule,
     LoggerModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
