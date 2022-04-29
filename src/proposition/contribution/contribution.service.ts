@@ -133,7 +133,11 @@ export class ContributionService {
               updatedArt.longitude = contribArt.longitude;
 
               await this.artRepository.save(updatedArt);
-
+              const user = await this.userRepository.findOne(prop.user.id);
+              await this.userRepository.update(
+                { id: user.id },
+                { contributions: user.contributions + 1 },
+              );
               await this.propRepository.delete(id);
 
               const tabIndex: number[] = [];

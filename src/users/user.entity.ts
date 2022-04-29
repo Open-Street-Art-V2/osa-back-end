@@ -43,6 +43,11 @@ export class User {
   @Column('enum', { enum: Role })
   role: Role;
 
+  @Column({
+    default: () => 0,
+  })
+  contributions: number;
+
   @OneToMany(() => Art, (art) => art.user, {
     nullable: true,
     eager: true,
