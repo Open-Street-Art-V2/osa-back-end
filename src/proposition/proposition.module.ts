@@ -16,6 +16,7 @@ import { Picture } from 'src/art/picture/picture.entity';
 import { PictureService } from 'src/art/picture/picture.service';
 import { ContributionController } from './contribution/contribution.controller';
 import { ContributionService } from './contribution/contribution.service';
+import { Trophie } from 'src/trophie/entities/trophie.entity';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ContributionService } from './contribution/contribution.service';
       ArtRepository,
       PropPicture,
       Picture,
+      Trophie,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
