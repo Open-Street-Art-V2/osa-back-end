@@ -30,11 +30,6 @@ import { ContributionService } from './contribution.service';
 export class ContributionController {
   constructor(private readonly contributionService: ContributionService) {}
 
-  @Get('testV')
-  async validateTest() {
-    return this.contributionService.validateContribution([11]);
-  }
-
   @Get()
   @JwtAuth(Role.ADMIN, Role.USER)
   async getContribution(@Query() paginationDto: PaginationDto) {
