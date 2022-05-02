@@ -14,9 +14,10 @@ import { Art } from 'src/art/art.entity';
 import { ArtRepository } from 'src/art/art.repository';
 import { Picture } from 'src/art/picture/picture.entity';
 import { PictureService } from 'src/art/picture/picture.service';
+import { Trophie } from 'src/trophie/entities/trophie.entity';
 import { User } from 'src/users/user.entity';
 import { UsersRepository } from 'src/users/user.repository';
-import { IsNull, Not, Repository } from 'typeorm';
+import { IsNull, LessThanOrEqual, Not, Repository } from 'typeorm';
 import { CreatePropositionDto } from '../dto/create-proposition.dto';
 import { Proposition } from '../entities/proposition.entity';
 import { PropPictureService } from '../proposition-picture/proposition-picture.service';
@@ -28,6 +29,7 @@ export class ContributionService {
     private propRepository: Repository<Proposition>,
     @InjectRepository(UsersRepository) private userRepository: UsersRepository,
     @InjectRepository(ArtRepository) private artRepository: ArtRepository,
+    @InjectRepository(Trophie) private trophieRepository: Repository<Trophie>,
     @Inject(PropPictureService) private propPicService: PropPictureService,
     @Inject(PictureService) private pictureService: PictureService,
   ) {}
@@ -133,6 +135,34 @@ export class ContributionService {
               updatedArt.longitude = contribArt.longitude;
 
               await this.artRepository.save(updatedArt);
+              const user = await this.userRepository.findOne({
+                relations: ['trophies'],
+                where: { id: prop.user.id },
+              });
+              const newContributions = user.contributions + 1;
+              await this.userRepository.update(
+                { id: user.id },
+                { contributions: newContributions },
+              );
+              const trophie = await this.trophieRepository.findOne({
+                where: {
+                  nbProposal: LessThanOrEqual(newContributions),
+                },
+                order: {
+                  nbProposal: 'DESC',
+                },
+              });
+
+              if (trophie) {
+                const userTrophie = user.trophies.find((t) => {
+                  return t.id == trophie.id;
+                });
+
+                if (!userTrophie) {
+                  user.trophies.push(trophie);
+                  await this.userRepository.save(user);
+                }
+              }
 
               await this.propRepository.delete(id);
 

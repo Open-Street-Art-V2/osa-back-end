@@ -43,6 +43,11 @@ export class User {
   @Column('enum', { enum: Role })
   role: Role;
 
+  @Column({
+    default: () => 0,
+  })
+  contributions: number;
+
   @OneToMany(() => Art, (art) => art.user, {
     nullable: true,
     eager: true,
@@ -65,7 +70,7 @@ export class User {
   })
   users: FavoriteArtist[];
 
-  @ManyToMany((type) => Trophie)
+  @ManyToMany(() => Trophie)
   @JoinTable()
   trophies: Trophie[];
 
