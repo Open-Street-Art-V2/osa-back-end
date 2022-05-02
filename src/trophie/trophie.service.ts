@@ -48,7 +48,6 @@ export class TrophieService {
       where: { id: userId },
     });
     let trophies = user.trophies.map((trophie) => trophie.id);
-    // console.log(trophies);
     if (trophies.length === 0) trophies = [0];
     const result = await paginate<Trophie>(this.trophieRepository, options, {
       where: { id: In(trophies) },

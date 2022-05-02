@@ -70,7 +70,7 @@ export class User {
   })
   users: FavoriteArtist[];
 
-  @ManyToMany((type) => Trophie)
+  @ManyToMany(() => Trophie)
   @JoinTable()
   trophies: Trophie[];
 

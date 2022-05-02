@@ -135,7 +135,10 @@ export class ContributionService {
               updatedArt.longitude = contribArt.longitude;
 
               await this.artRepository.save(updatedArt);
-              const user = await this.userRepository.findOne(prop.user.id);
+              const user = await this.userRepository.findOne({
+                relations: ['trophies'],
+                where: { id: prop.user.id },
+              });
               const newContributions = user.contributions + 1;
               await this.userRepository.update(
                 { id: user.id },
@@ -149,10 +152,16 @@ export class ContributionService {
                   nbProposal: 'DESC',
                 },
               });
-              if (user.trophies[0].id !== trophie.id) {
-                user.trophies.pop();
-                user.trophies.push(trophie);
-                await this.userRepository.save(user);
+
+              if (trophie) {
+                const userTrophie = user.trophies.find((t) => {
+                  return t.id == trophie.id;
+                });
+
+                if (!userTrophie) {
+                  user.trophies.push(trophie);
+                  await this.userRepository.save(user);
+                }
               }
 
               await this.propRepository.delete(id);
